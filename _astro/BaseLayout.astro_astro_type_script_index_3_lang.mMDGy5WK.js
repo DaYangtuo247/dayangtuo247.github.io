@@ -1,0 +1,1 @@
+import{initBatchStats as a}from"./batch-stats.CIxY3TQS.js";import"./preload-helper.BlTxHScW.js";async function e(){const t=document.getElementById("waline-config")?.getAttribute("data-server-url");t&&await a(t)}e();document.addEventListener("astro:after-swap",e);

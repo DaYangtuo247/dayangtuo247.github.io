@@ -1,0 +1,856 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CDGfc0hd.js"></script> <!-- Global Metadata --> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <link rel="icon" type="image/x-icon" href="/favicon.ico"> <!-- 字体 CDN（jsDelivr，全球 CDN 含中国节点） --> <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin> <!-- Waline 评论/统计后端：提前建连，减少评论区首个请求的握手延迟 --> <link rel="preconnect" href="https://api.wqlblog.cn" crossorigin> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.css"> <meta name="generator" content="Astro v5.18.1"> <script>
+	(() => {
+		const MODE_KEY = 'theme-mode';
+		const root = document.documentElement;
+		const stored = localStorage.getItem(MODE_KEY) || localStorage.getItem('theme');
+		const mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+		const effective = mode === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : mode;
+
+		root.dataset.themeMode = mode;
+		root.classList.toggle('dark', effective === 'dark');
+		root.dataset.theme = effective;
+	})();
+</script> <!-- Canonical URL --> <link rel="canonical" href="https://www.wqlblog.cn/posts/HTML_%E5%B8%96%E5%AD%90%EF%BC%9A%E6%AF%94_Markdown_%E8%A1%A8%E8%BE%BE%E6%9B%B4%E5%A4%9A/"> <!-- Primary Meta Tags --> <title>HTML 帖子：比 Markdown 表达更多 - KelrinWu&#39;s Blog</title> <meta name="title" content="HTML 帖子：比 Markdown 表达更多 - KelrinWu's Blog"> <meta name="description" content="在 markdown 里直接混写主题化 HTML：统计卡片、环形图、趋势线、热力网格、分类色块图、终端截图卡片、误区徽标和彩色排序可视化，外表和普通文章无差别"> <!-- Open Graph / Facebook --> <meta property="og:type" content="website"> <meta property="og:url" content="https://www.wqlblog.cn/posts/HTML_%E5%B8%96%E5%AD%90%EF%BC%9A%E6%AF%94_Markdown_%E8%A1%A8%E8%BE%BE%E6%9B%B4%E5%A4%9A/"> <meta property="og:title" content="HTML 帖子：比 Markdown 表达更多"> <meta property="og:description" content="在 markdown 里直接混写主题化 HTML：统计卡片、环形图、趋势线、热力网格、分类色块图、终端截图卡片、误区徽标和彩色排序可视化，外表和普通文章无差别"> <meta property="og:image" content="https://www.wqlblog.cn/favicon.ico"> <!-- Twitter --> <meta property="twitter:card" content="summary_large_image"> <meta property="twitter:url" content="https://www.wqlblog.cn/posts/HTML_%E5%B8%96%E5%AD%90%EF%BC%9A%E6%AF%94_Markdown_%E8%A1%A8%E8%BE%BE%E6%9B%B4%E5%A4%9A/"> <meta property="twitter:title" content="HTML 帖子：比 Markdown 表达更多"> <meta property="twitter:description" content="在 markdown 里直接混写主题化 HTML：统计卡片、环形图、趋势线、热力网格、分类色块图、终端截图卡片、误区徽标和彩色排序可视化，外表和普通文章无差别"> <meta property="twitter:image" content="https://www.wqlblog.cn/favicon.ico"><link rel="stylesheet" href="/_astro/_...slug_.WBhVMAu6.css">
+<link rel="stylesheet" href="/_astro/_slug_.ISP7CH_S.css">
+<link rel="stylesheet" href="/_astro/_slug_.3GJi6cRf.css">
+<link rel="stylesheet" href="/_astro/thoughts.CbYNSEou.css"></head> <body> <header id="site-header" class="site-header"> <div class="site-header-inner container"> <!-- Brand --> <a href="/" class="header-brand" aria-label="KelrinWu's Blog"> <img src="/img/avatar.png" alt="KelrinWu's Blog" class="header-avatar" width="32" height="32"> <span class="header-brand-name">KelrinWu&#39;s Blog</span> </a> <!-- Desktop nav links (hidden on mobile) --> <nav class="header-nav" aria-label="Main navigation"> <a href="/about/" class="header-nav-link" data-text="About"> About </a><a href="/posts/" class="header-nav-link is-active" data-text="Posts"> Posts </a><a href="/thoughts/" class="header-nav-link" data-text="Thoughts"> Thoughts </a><a href="/projects/" class="header-nav-link" data-text="Projects"> Projects </a><a href="/friends/" class="header-nav-link" data-text="Friends"> Friends </a><a href="/archive/" class="header-nav-link" data-text="Archive"> Archive </a> </nav> <!-- Right: actions + hamburger --> <div class="header-right"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> <button id="mobileNavToggle" class="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavMenu" type="button"> <span class="ham-line"></span> <span class="ham-line"></span> <span class="ham-line"></span> </button> </div> </div> <!-- Mobile dropdown menu --> <div id="mobileNavMenu" class="mobile-nav-menu" aria-hidden="true"> <a href="/about/" class="mobile-nav-item"> About </a><a href="/posts/" class="mobile-nav-item is-active"> Posts </a><a href="/thoughts/" class="mobile-nav-item"> Thoughts </a><a href="/projects/" class="mobile-nav-item"> Projects </a><a href="/friends/" class="mobile-nav-item"> Friends </a><a href="/archive/" class="mobile-nav-item"> Archive </a> </div> <script type="module" src="/_astro/Header.astro_astro_type_script_index_0_lang.DO65IW0S.js"></script> </header> <div id="mobileDrawer" class="mobile-drawer fixed inset-0 z-[1150] pointer-events-none sidebar-dependent-hide" aria-hidden="true"> <button class="mobile-drawer-backdrop absolute inset-0 border-0 bg-slate-900/34 backdrop-blur-lg opacity-0 transition-opacity duration-180" type="button" data-mobile-drawer-close aria-label="Close navigation menu"></button> <aside class="mobile-drawer-panel absolute inset-y-0 right-0 w-[min(84vw,22rem)] h-full border-l border-[var(--theme-border)] backdrop-blur-[22px] shadow-[0_24px_60px_rgba(15,23,42,0.16)] p-4 pb-6 overflow-y-auto translate-x-full transition-transform duration-[220ms] ease-[ease] theme-surface-float" role="dialog" aria-modal="true" aria-label="Article menu"> <div class="mobile-drawer-head flex items-center justify-between gap-4 mb-5"> <div class="text-[1.05rem] font-bold text-[var(--theme-fg)]">Contents</div> <button class="mobile-drawer-close inline-flex items-center justify-center w-10 h-10 flex-shrink-0" type="button" data-mobile-drawer-close aria-label="Close menu"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="mobile-drawer-extra grid gap-4">  <div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem]">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#统计卡片" data-index="0" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 统计卡片 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#流程图内联-svg" data-index="1" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 流程图（内联 SVG） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#环形图svg多色分段" data-index="2" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 环形图（SVG，多色分段） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#迷你趋势图svg-折线--渐变填充" data-index="3" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 迷你趋势图（SVG 折线 + 渐变填充） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#对比图表纯-css" data-index="4" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 对比图表（纯 CSS） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#分类色块图保留原始多色语言" data-index="5" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 分类色块图（保留原始多色语言） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#热力网格同一色相的强度阶梯" data-index="6" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 热力网格（同一色相的强度阶梯） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#截图式卡片固定配色不跟随站点主题" data-index="7" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 截图式卡片（固定配色，不跟随站点主题） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#警示卡片比建议更强调的徽标样式" data-index="8" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 警示卡片（比”建议”更强调的徽标样式） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#算法可视化交互脚本数据驱动配色" data-index="9" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 算法可视化（交互脚本，数据驱动配色） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#什么时候还是纯-markdown" data-index="10" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 什么时候还是纯 Markdown </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#这篇文章怎么来的" data-index="11" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 这篇文章怎么来的 </span> </a> </div>  </div> </nav><script type="module">function v(){document.querySelectorAll(".toc-scrollbar-container").forEach(s=>{const b=s.querySelector(".toc-scrollbar-wrap"),m=s.querySelector(".toc-custom-scrollbar"),p=s.querySelector(".toc-custom-scrollbar-thumb");if(!b||!m||!p)return;const t=b,h=m,n=p;function o(){const{scrollTop:r,scrollHeight:l,clientHeight:e}=t;if(l<=e){h.style.display="none";return}h.style.display="";const u=e/l,a=Math.max(16,u*e),i=e-a,d=r/(l-e)*i;n.style.height=`${a}px`,n.style.transform=`translateY(${d}px)`}if(o(),s.dataset.scrollbarBound==="true")return;s.dataset.scrollbarBound="true",t.addEventListener("scroll",o,{passive:!0}),new ResizeObserver(o).observe(t),new MutationObserver(o).observe(t,{childList:!0,subtree:!0,attributes:!0,attributeFilter:["class","style"]}),t.addEventListener("transitionend",o,{passive:!0});let c=!1,y=0,f=0;n.addEventListener("mousedown",r=>{r.preventDefault(),c=!0,y=r.clientY,f=t.scrollTop,document.body.style.userSelect="none"}),window.addEventListener("mousemove",r=>{if(!c)return;const{scrollHeight:l,clientHeight:e}=t,u=n.offsetHeight,a=e-u,i=r.clientY-y,d=l-e;t.scrollTop=f+i/a*d}),window.addEventListener("mouseup",()=>{c&&(c=!1,document.body.style.userSelect="")})})}v();document.addEventListener("astro:after-swap",v);</script> </div>  </div> </aside> </div> <script type="module" src="/_astro/MobileDrawer.astro_astro_type_script_index_0_lang.QZyAK5kg.js"></script> <div id="searchOverlay" class="search-overlay hidden" aria-hidden="true"> <div class="search-backdrop" data-search-close></div> <div class="search-panel" role="dialog" aria-modal="true" aria-labelledby="searchTitle"> <div class="search-head"> <div> <div id="searchTitle" class="search-title">Search</div> <div class="search-subtitle">Search by title, tag or description</div> </div> <button class="search-close" id="searchClose" type="button" aria-label="Close search"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="search-input-shell"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="11" cy="11" r="8"></circle> <path d="m21 21-4.35-4.35"></path> </svg> <input id="searchInput" class="search-input" type="search" placeholder="Try searching Transformer, database, MCP..." autocomplete="off"> </div> <div id="searchMeta" class="search-meta">Press <kbd>/</kbd> to open, <kbd>Esc</kbd> to close</div> <div id="searchResults" class="search-results"> <div class="search-empty"> <div class="search-empty-title">Start searching</div> <div class="search-empty-text">Matching posts will appear here in real time.</div> </div> </div> </div> </div> <script type="module" src="/_astro/SearchOverlay.astro_astro_type_script_index_0_lang.CCrLlu7v.js"></script> <div class="py-8 min-h-[calc(100vh-160px)]">   <div class="article-page-shell"> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				var g = document.querySelector('.article-desktop-grid');
+				if (!g) return;
+				g.style.transition = 'none';
+				if (s.right) g.classList.add('sidebar-right-collapsed');
+				g.offsetHeight;
+				g.style.transition = '';
+			} catch(e) {}
+		})();
+		</script> <div class="container article-desktop-grid group/scroll"> <aside class="article-right-rail" data-sidebar="right"> <div class="sidebar-toggle-wrapper sidebar-toggle-wrapper-right"> <button class="sidebar-toggle-btn sidebar-toggle-right" data-edge-toggle="right" aria-label="Toggle TOC sidebar"> <svg width="14" height="160" viewBox="0 0 14 160" fill="none" xmlns="http://www.w3.org/2000/svg"> <defs> <linearGradient id="gtr" x1="0" y1="0" x2="0" y2="73" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0.5"></stop> </linearGradient> <linearGradient id="gbr" x1="0" y1="87" x2="0" y2="160" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0.5"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop> </linearGradient> </defs> <line x1="7" y1="0" x2="7" y2="73" stroke="url(#gtr)" stroke-width="1"></line> <path d="M7 73 L11 80 L7 87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <line x1="7" y1="87" x2="7" y2="160" stroke="url(#gbr)" stroke-width="1"></line> </svg> </button> </div> <div class="article-rail-inner" data-sidebar-content="right"> <div class="toc-sticky-inner"> <div class="article-rail-dock article-rail-dock-right" data-article-header-dock="right" data-clone-ready="true"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> </div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem] toc-scrollbar-wrap max-h-[calc(100vh-70px)] overflow-y-auto">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#统计卡片" data-index="0" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 统计卡片 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#流程图内联-svg" data-index="1" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 流程图（内联 SVG） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#环形图svg多色分段" data-index="2" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 环形图（SVG，多色分段） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#迷你趋势图svg-折线--渐变填充" data-index="3" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 迷你趋势图（SVG 折线 + 渐变填充） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#对比图表纯-css" data-index="4" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 对比图表（纯 CSS） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#分类色块图保留原始多色语言" data-index="5" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 分类色块图（保留原始多色语言） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#热力网格同一色相的强度阶梯" data-index="6" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 热力网格（同一色相的强度阶梯） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#截图式卡片固定配色不跟随站点主题" data-index="7" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 截图式卡片（固定配色，不跟随站点主题） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#警示卡片比建议更强调的徽标样式" data-index="8" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 警示卡片（比”建议”更强调的徽标样式） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#算法可视化交互脚本数据驱动配色" data-index="9" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 算法可视化（交互脚本，数据驱动配色） </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#什么时候还是纯-markdown" data-index="10" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 什么时候还是纯 Markdown </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#这篇文章怎么来的" data-index="11" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 这篇文章怎么来的 </span> </a> </div> <div class="toc-custom-scrollbar"> <div class="toc-custom-scrollbar-thumb"></div> </div> </div> </nav> </div> </div> </aside> <main class="grow article-main-column"> <article class="article-main-panel"> <div class="prose max-w-none dark:prose-invert
+  prose-img:rounded-xl prose-img:mx-auto prose-img:block
+  prose-h1:target:pt-20 prose-h2:target:pt-20 prose-h3:target:pt-20
+  prose-code:before:content-none prose-code:after:content-none
+  prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md">  <div class="article-title-block"> <!-- 1. 返回链接 --> <a href="/posts/" class="article-back-link" data-back-link> <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <polyline points="15 18 9 12 15 6"></polyline> </svg>
+Back to Posts
+</a> <!-- 2. 标题 --> <h1 class="article-title">HTML 帖子：比 Markdown 表达更多</h1> <!-- 3. 分类/标签 + meta：合并为一行 flex，窄屏自然换行 --> <div class="article-header-inline-row"> <div class="article-label-row"> <a href="/archive/?category=%E4%B8%BB%E9%A2%98%E6%8C%87%E5%8D%97" class="pill-tag px-2 py-0.5 text-xs no-underline">主题指南</a> <a href="/archive/?tag=%E4%B8%BB%E9%A2%98%E5%8A%9F%E8%83%BD" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;主题功能</a><a href="/archive/?tag=HTML" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;HTML</a> </div> <div class="article-meta-row"> <div class="flex items-center gap-1" title="Published"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect> <line x1="16" y1="2" x2="16" y2="6"></line> <line x1="8" y1="2" x2="8" y2="6"></line> <line x1="3" y1="10" x2="21" y2="10"></line> </svg> <time datetime="2026-07-06T00:00:00.000Z"> Jul 6, 2026 </time> </div> <div class="flex items-center gap-1" title="Reading time"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <polyline points="12 6 12 12 16 14"></polyline> </svg> <span>21 min read</span> </div> <div class="flex items-center gap-1" title="Views"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path> <circle cx="12" cy="12" r="3"></circle> </svg> <span class="waline-pageview-count" data-path="21bc015023eaac16">—</span> </div> </div> </div> <!-- 4. 分割线 --> <div class="article-title-divider"></div> </div> <div class="article-content"> <p>Markdown 写叙述很顺手，但一旦想表达统计卡片、分类色块图、多列对比这类结构，就只能靠贴图或者放弃。这篇文章本身就是解决方案的演示：正文仍然是 markdown，视觉结构由内嵌的 HTML 块表达——样式全部继承站点主题变量，所以暗色模式、移动端、目录、锚点都和普通文章行为完全一致。下面挑了几种最常用的组件秀一下效果，不是完整文档。</p>
+<p>写法很简单：用 <code>/html-to-post</code> 触发 Claude Code 里的同名 skill，附上你的内容素材，产出的 <code>.md</code> 文件校对后放进 <code>src/content/</code> 即可发布。</p>
+<h2 id="统计卡片"><a href="#统计卡片">统计卡片</a><a href="#统计卡片" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="统计卡片"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>叙述里出现一组关键数字时，比起写成一句话，卡片一目了然：</p>
+<div class="hp hp-stats">
+  <div class="hp-stat">
+    <span class="hp-stat-num">0</span>
+    <span class="hp-stat-label">新增管线代码</span>
+  </div>
+  <div class="hp-stat">
+    <span class="hp-stat-num">1</span>
+    <span class="hp-stat-label">规则文件</span>
+  </div>
+  <div class="hp-stat">
+    <span class="hp-stat-num">2</span>
+    <span class="hp-stat-label">套主题自动适配</span>
+  </div>
+  <div class="hp-stat">
+    <span class="hp-stat-num">100%</span>
+    <span class="hp-stat-label">TOC / 锚点兼容</span>
+  </div>
+</div>
+<p><em>统计卡片：<code>display: grid</code> + 主题表面色，移动端自动两列。</em></p>
+<h2 id="流程图内联-svg"><a href="#流程图内联-svg">流程图（内联 SVG）</a><a href="#流程图内联-svg" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="流程图内联-svg"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>流程图不再需要 mermaid 或截图，内联 SVG 用 <code>var(--theme-*)</code> 着色，暗色模式下自动换色：</p>
+<div class="hp hp-flow">
+  <svg viewBox="0 0 720 120" role="img" aria-label="发布流程：素材给 Claude，产出 md，校对后发布">
+    <rect x="8" y="30" width="180" height="60" rx="12" class="hp-flow-node"></rect>
+    <text x="98" y="55" text-anchor="middle" class="hp-flow-title">HTML / 素材</text>
+    <text x="98" y="75" text-anchor="middle" class="hp-flow-sub">丢给 Claude</text>
+    <path d="M196 60 H256" class="hp-flow-arrow"></path>
+    <path d="M250 54 L262 60 L250 66 Z" class="hp-flow-head"></path>
+    <rect x="268" y="30" width="180" height="60" rx="12" class="hp-flow-node"></rect>
+    <text x="358" y="55" text-anchor="middle" class="hp-flow-title">完整 .md 文件</text>
+    <text x="358" y="75" text-anchor="middle" class="hp-flow-sub">markdown + HTML 混写</text>
+    <path d="M456 60 H516" class="hp-flow-arrow"></path>
+    <path d="M510 54 L522 60 L510 66 Z" class="hp-flow-head"></path>
+    <rect x="528" y="30" width="180" height="60" rx="12" class="hp-flow-node hp-flow-node-accent"></rect>
+    <text x="618" y="55" text-anchor="middle" class="hp-flow-title">校对 → 发布</text>
+    <text x="618" y="75" text-anchor="middle" class="hp-flow-sub">放进 src/content/</text>
+  </svg>
+</div>
+<p><em>三步发布流程：描边、文字、强调色全部来自主题变量。</em></p>
+<h2 id="环形图svg多色分段"><a href="#环形图svg多色分段">环形图（SVG，多色分段）</a><a href="#环形图svg多色分段" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="环形图svg多色分段"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>同一套 SVG 描边技巧还能画环形占比图，每个分段一个色相，和下面”分类色块图”用的是同一组颜色，呼应统一的视觉语言：</p>
+<div class="hp hp-ring">
+  <div class="hp-ring-graphic">
+    <svg viewBox="0 0 120 120" role="img" aria-label="本文组件类型占比：Markdown 原生 40%，图表流程图 25%，信息卡片 20%，交互组件 15%">
+      <g transform="rotate(-90 60 60)">
+        <circle cx="60" cy="60" r="48" class="hp-ring-track"></circle>
+        <circle cx="60" cy="60" r="48" class="hp-ring-seg hp-ring-seg-blue" stroke-dasharray="120.6 181" stroke-dashoffset="0"></circle>
+        <circle cx="60" cy="60" r="48" class="hp-ring-seg hp-ring-seg-purple" stroke-dasharray="75.4 226.2" stroke-dashoffset="-120.6"></circle>
+        <circle cx="60" cy="60" r="48" class="hp-ring-seg hp-ring-seg-teal" stroke-dasharray="60.3 241.3" stroke-dashoffset="-196"></circle>
+        <circle cx="60" cy="60" r="48" class="hp-ring-seg hp-ring-seg-coral" stroke-dasharray="45.2 256.4" stroke-dashoffset="-256.3"></circle>
+      </g>
+    </svg>
+    <div class="hp-ring-center">
+      <span class="hp-ring-num">4</span>
+      <span class="hp-ring-unit">类组件</span>
+    </div>
+  </div>
+  <div class="hp-ring-legend">
+    <span><span class="hp-dot hp-dot-blue"></span>Markdown 原生 40%</span>
+    <span><span class="hp-dot hp-dot-purple"></span>图表 / 流程图 25%</span>
+    <span><span class="hp-dot hp-dot-teal"></span>信息卡片 20%</span>
+    <span><span class="hp-dot hp-dot-coral"></span>交互组件 15%</span>
+  </div>
+</div>
+<p><em>四段环形图：每段 <code>stroke-dasharray</code> 按百分比算长度，<code>stroke-dashoffset</code> 累加前面段的长度首尾相接。</em></p>
+<h2 id="迷你趋势图svg-折线--渐变填充"><a href="#迷你趋势图svg-折线--渐变填充">迷你趋势图（SVG 折线 + 渐变填充）</a><a href="#迷你趋势图svg-折线--渐变填充" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="迷你趋势图svg-折线--渐变填充"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>数据趋势用一条折线 + 渐变填充表达，比一句”持续增长”直观得多：</p>
+<div class="hp hp-spark">
+  <div class="hp-spark-head">
+    <span class="hp-spark-title">这篇文章的组件数量（近 6 次修订）</span>
+    <span class="hp-spark-now">13</span>
+  </div>
+  <svg viewBox="0 0 300 70" preserveAspectRatio="none" role="img" aria-label="组件数量趋势：4、5、6、8、9、13，持续增长">
+    <defs>
+      <linearGradient id="hp-spark-fill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" style="stop-color:var(--theme-accent);stop-opacity:0.32"></stop>
+        <stop offset="100%" style="stop-color:var(--theme-accent);stop-opacity:0"></stop>
+      </linearGradient>
+    </defs>
+    <path d="M0,58 L60,52 L120,46 L180,34 L240,28 L300,4 L300,70 L0,70 Z" class="hp-spark-area"></path>
+    <path d="M0,58 L60,52 L120,46 L180,34 L240,28 L300,4" class="hp-spark-line"></path>
+    <circle cx="300" cy="4" r="4" class="hp-spark-dot"></circle>
+  </svg>
+</div>
+<p><em>折线用主题强调色，填充渐变从 32% 透明度淡出到 0——<code>stop-color</code> 直接写 <code>var(--theme-accent)</code> 就能让 SVG 渐变跟随主题切换。</em></p>
+<h2 id="对比图表纯-css"><a href="#对比图表纯-css">对比图表（纯 CSS）</a><a href="#对比图表纯-css" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="对比图表纯-css"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>不需要图表库，几行 CSS 就能表达同一个指标的递进对比：</p>
+<div class="hp hp-bars">
+  <div class="hp-bar-row">
+    <span class="hp-bar-label">Markdown</span>
+    <span class="hp-bar-track"><span class="hp-bar-fill" style="width:38%"></span></span>
+    <span class="hp-bar-val">叙述</span>
+  </div>
+  <div class="hp-bar-row">
+    <span class="hp-bar-label">+ Mermaid</span>
+    <span class="hp-bar-track"><span class="hp-bar-fill" style="width:62%"></span></span>
+    <span class="hp-bar-val">+ 节点图</span>
+  </div>
+  <div class="hp-bar-row">
+    <span class="hp-bar-label">+ HTML 块</span>
+    <span class="hp-bar-track"><span class="hp-bar-fill hp-bar-fill-accent" style="width:96%"></span></span>
+    <span class="hp-bar-val">任意视觉结构</span>
+  </div>
+</div>
+<p><em>表达能力对比：条形图的填充色用 <code>color-mix</code> 从强调色派生深浅，同一个色相表示同一个指标。</em></p>
+<h2 id="分类色块图保留原始多色语言"><a href="#分类色块图保留原始多色语言">分类色块图（保留原始多色语言）</a><a href="#分类色块图保留原始多色语言" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="分类色块图保留原始多色语言"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>如果原始素材给不同类别分配了不同色相（比如”输入 / 处理 / 输出”三个阶段各自一个颜色），规则要求<strong>保留这些色相本身</strong>，不能为了”用主题变量”就把它们全部塌缩成一个强调色的深浅变化——那样会丢掉设计想传达的类别区分。做法是把每个分类色相通过 <code>color-mix</code> 混进主题表面色，背景深浅跟着亮暗模式走，但色相不变：</p>
+<div class="hp hp-cat">
+  <div class="hp-cat-block hp-cat-blue">
+    <div class="hp-cat-title">输入</div>
+    <div class="hp-cat-sub">用户粘贴的原始 HTML 或截图素材</div>
+  </div>
+  <div class="hp-cat-block hp-cat-purple">
+    <div class="hp-cat-title">判断</div>
+    <div class="hp-cat-sub">逐段对照判断表：markdown 还是自定义 HTML</div>
+  </div>
+  <div class="hp-cat-block hp-cat-teal">
+    <div class="hp-cat-title">转换</div>
+    <div class="hp-cat-sub">视觉结构包成 <code>.hp</code> 前缀的 HTML + 主题化样式</div>
+  </div>
+  <div class="hp-cat-block hp-cat-coral">
+    <div class="hp-cat-title">校验</div>
+    <div class="hp-cat-sub">astro check + 暗色模式 + 移动端截图核对</div>
+  </div>
+  <div class="hp-cat-block hp-cat-green">
+    <div class="hp-cat-title">发布</div>
+    <div class="hp-cat-sub">放进 src/content/ 对应子目录即可</div>
+  </div>
+</div>
+<p><em>五个阶段各自一个色相，切到暗色模式看一眼——背景变深了，但蓝、紫、青、珊瑚、绿五种颜色本身没有变成同一种紫色的深浅。</em></p>
+<h2 id="热力网格同一色相的强度阶梯"><a href="#热力网格同一色相的强度阶梯">热力网格（同一色相的强度阶梯）</a><a href="#热力网格同一色相的强度阶梯" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="热力网格同一色相的强度阶梯"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>和上面”分类色块图”用多个色相区分类别不同，这种场景只有一个维度（强度高低），用同一色相的深浅阶梯表达最合适——类似 GitHub 的贡献热力图：</p>
+<div class="hp hp-heat">
+  <div class="hp-heat-cap">三周内容更新热度（示意）</div>
+  <div class="hp-heat-grid">
+    <span class="hp-heat-cell hp-heat-1"></span><span class="hp-heat-cell hp-heat-0"></span><span class="hp-heat-cell hp-heat-2"></span><span class="hp-heat-cell hp-heat-3"></span><span class="hp-heat-cell hp-heat-1"></span><span class="hp-heat-cell hp-heat-0"></span><span class="hp-heat-cell hp-heat-2"></span>
+    <span class="hp-heat-cell hp-heat-2"></span><span class="hp-heat-cell hp-heat-3"></span><span class="hp-heat-cell hp-heat-4"></span><span class="hp-heat-cell hp-heat-3"></span><span class="hp-heat-cell hp-heat-2"></span><span class="hp-heat-cell hp-heat-1"></span><span class="hp-heat-cell hp-heat-0"></span>
+    <span class="hp-heat-cell hp-heat-0"></span><span class="hp-heat-cell hp-heat-1"></span><span class="hp-heat-cell hp-heat-2"></span><span class="hp-heat-cell hp-heat-4"></span><span class="hp-heat-cell hp-heat-3"></span><span class="hp-heat-cell hp-heat-2"></span><span class="hp-heat-cell hp-heat-1"></span>
+  </div>
+  <div class="hp-heat-legend">
+    <span>少</span>
+    <span class="hp-heat-cell hp-heat-0"></span>
+    <span class="hp-heat-cell hp-heat-1"></span>
+    <span class="hp-heat-cell hp-heat-2"></span>
+    <span class="hp-heat-cell hp-heat-3"></span>
+    <span class="hp-heat-cell hp-heat-4"></span>
+    <span>多</span>
+  </div>
+</div>
+<p><em>21 个格子、5 级强度，全部是 <code>color-mix(in srgb, 色相 N%, var(--theme-surface))</code> 换个百分比——不需要脚本，纯 CSS 就能表达强度渐变。</em></p>
+<h2 id="截图式卡片固定配色不跟随站点主题"><a href="#截图式卡片固定配色不跟随站点主题">截图式卡片（固定配色，不跟随站点主题）</a><a href="#截图式卡片固定配色不跟随站点主题" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="截图式卡片固定配色不跟随站点主题"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>有一类内容例外：如果 HTML 块是在<strong>还原一张真实截图</strong>（终端输出、某个 App 的界面），它就该保持截图本来的颜色，不接主题变量——毕竟真实的终端软件配色不会因为你现在开的是亮色浏览器就变白：</p>
+<div class="hp hp-term">
+  <div class="hp-term-head">
+    <span class="hp-term-dot hp-term-dot-r"></span>
+    <span class="hp-term-dot hp-term-dot-y"></span>
+    <span class="hp-term-dot hp-term-dot-g"></span>
+    <span class="hp-term-title">~/devolio-blog-theme</span>
+  </div>
+  <div class="hp-term-body">
+    <div class="hp-term-line"><span class="hp-term-prompt">$</span> pnpm astro check</div>
+    <div class="hp-term-line hp-term-ok">✓ Result (105 files): 0 errors, 0 warnings</div>
+    <div class="hp-term-line"><span class="hp-term-prompt">$</span> _</div>
+  </div>
+</div>
+<p><em>这个终端窗口在亮色模式和暗色模式下长得一模一样——因为它本身就是在模拟一张截图，不是主题化内容。</em></p>
+<h2 id="警示卡片比建议更强调的徽标样式"><a href="#警示卡片比建议更强调的徽标样式">警示卡片（比”建议”更强调的徽标样式）</a><a href="#警示卡片比建议更强调的徽标样式" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="警示卡片比建议更强调的徽标样式"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>普通的建议用 markdown 引用块就够（见下一节），但如果想要更强的视觉分量——比如标出一类常见误区——可以用带徽标的卡片：</p>
+<div class="hp hp-warn">
+  <span class="hp-warn-x">✕ 误区</span>
+  <div class="hp-warn-body">
+    <b>把整段表格写成自定义 HTML</b>
+    <p>站点默认的 markdown 表格样式已经够用，自定义 HTML 表格反而要多写一大堆 CSS 才能达到同样效果，得不偿失。</p>
+    <p class="hp-warn-fix">→ 换成：markdown 表格 <code>| a | b |</code></p>
+  </div>
+</div>
+<p><em>徽标 + 箭头结构，比纯文字警示更容易一眼扫到。</em></p>
+<h2 id="算法可视化交互脚本数据驱动配色"><a href="#算法可视化交互脚本数据驱动配色">算法可视化（交互脚本，数据驱动配色）</a><a href="#算法可视化交互脚本数据驱动配色" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="算法可视化交互脚本数据驱动配色"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>规则也允许克制的交互脚本——比如冒泡排序的动态演示。每根柱子按自己的数值算一个色相（数值越小越偏蓝青、越大越偏红橙），排序完成后自然呈现一条彩虹渐变，比单色柱子更好看也更直观；脚本被约束在自己的容器里，站内导航来回切换后依然可用：</p>
+<div class="hp hp-sort" id="hp-sort-viz">
+  <div class="hp-sort-bars" aria-label="待排序数组的柱状图，颜色随数值从蓝青渐变到红橙"></div>
+  <div class="hp-sort-controls">
+    <button type="button" class="hp-sort-btn" data-sort-play="">播放排序</button>
+    <button type="button" class="hp-sort-btn hp-sort-btn-ghost" data-sort-reset="">重置</button>
+    <span class="hp-sort-status" data-sort-status="">就绪</span>
+  </div>
+</div>
+<p><em>冒泡排序可视化：柱子颜色由数值映射到色相（<code>hsl(220 − v·1.9, 65%, 55%)</code>），高亮当前比较的两根柱子，已排定的部分保持全亮度、未排定的部分微微调暗。</em></p>
+<h2 id="什么时候还是纯-markdown"><a href="#什么时候还是纯-markdown">什么时候还是纯 Markdown</a><a href="#什么时候还是纯-markdown" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="什么时候还是纯-markdown"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>上面这些花样都是给”markdown 表达不出来的结构”用的。但大部分内容根本用不上 HTML——表格、建议、代码这三类<strong>永远</strong>是 markdown，直接原生语法写就是最好的效果，理由也简单：站点默认样式已经够好看，自定义反而更丑更难维护。</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>内容类型</th><th>用什么</th></tr></thead><tbody><tr><td>数据行列对比</td><td>markdown 表格</td></tr><tr><td>建议 / 提示</td><td>markdown 引用块</td></tr><tr><td>代码示例</td><td>markdown 代码块（自带语法高亮）</td></tr><tr><td>图片 + 图注</td><td>markdown <code>![]()</code> + 斜体说明段落</td></tr></tbody></table></div>
+<blockquote>
+<p><strong>建议</strong>：拿到一份 HTML 素材时先过一遍判断表——能用 markdown 原生语法表达的（标题、表格、图片、引用、代码），就用 markdown；只有图表、多色分类卡片、进度条、截图式 mockup、交互这类 markdown 语法表达不出来的视觉结构，才值得包一层自定义 HTML。</p>
+</blockquote>
+<h2 id="这篇文章怎么来的"><a href="#这篇文章怎么来的">这篇文章怎么来的</a><a href="#这篇文章怎么来的" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="这篇文章怎么来的"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>上面所有 HTML 视觉块遵循同一份约定：最外层 <code>&#x3C;div class="hp"></code>、样式集中在文末的 <code>&#x3C;style></code> 块且选择器全部以 <code>.hp</code> 开头、颜色只用主题变量（分类色相例外，用 <code>color-mix</code> 保留色相；截图 mockup 例外，固定原色）、章节标题全是 markdown 的 <code>##</code>（所以右侧目录正常工作）。交互脚本带 <code>data-astro-rerun</code> 并做了幂等守卫，只查询自己容器内的 DOM。</p>
+<p>完整规则见仓库内 <code>.claude/skills/html-to-post/SKILL.md</code>——那份文件就是喂给 Claude 的全部内容。</p>
+<style>
+  .hp {
+    margin: 1.5rem 0;
+  }
+
+  /* ── 统计卡片 ── */
+  .hp.hp-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+  }
+  .hp.hp-stats .hp-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem 1.1rem;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-radius-lg);
+  }
+  .hp.hp-stats .hp-stat-num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--theme-accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .hp.hp-stats .hp-stat-label {
+    font-size: 0.8rem;
+    color: var(--theme-muted);
+  }
+
+  /* ── SVG 流程图 ── */
+  .hp.hp-flow svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .hp.hp-flow .hp-flow-node {
+    fill: var(--theme-surface);
+    stroke: var(--theme-border);
+    stroke-width: 1.5;
+  }
+  .hp.hp-flow .hp-flow-node-accent {
+    stroke: var(--theme-accent);
+    fill: color-mix(in srgb, var(--theme-accent) 7%, var(--theme-surface));
+  }
+  .hp.hp-flow .hp-flow-title {
+    fill: var(--theme-fg);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .hp.hp-flow .hp-flow-sub {
+    fill: var(--theme-muted);
+    font-size: 11px;
+  }
+  .hp.hp-flow .hp-flow-arrow {
+    stroke: var(--theme-muted);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .hp.hp-flow .hp-flow-head {
+    fill: var(--theme-muted);
+  }
+
+  /* ── 环形图 ── */
+  .hp.hp-ring {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.1rem 1.3rem;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-radius-lg);
+  }
+  .dark .hp.hp-ring {
+    background: var(--theme-surface-elevated);
+  }
+  .hp.hp-ring .hp-ring-graphic {
+    position: relative;
+    width: 108px;
+    height: 108px;
+    flex-shrink: 0;
+  }
+  .hp.hp-ring svg {
+    width: 100%;
+    height: 100%;
+  }
+  .hp.hp-ring .hp-ring-track {
+    fill: none;
+    stroke: color-mix(in srgb, var(--theme-fg) 8%, transparent);
+    stroke-width: 14;
+  }
+  .hp.hp-ring .hp-ring-seg {
+    fill: none;
+    stroke-width: 14;
+  }
+  .hp.hp-ring .hp-ring-seg-blue { stroke: #2F5FE0; }
+  .hp.hp-ring .hp-ring-seg-purple { stroke: #7B5CE0; }
+  .hp.hp-ring .hp-ring-seg-teal { stroke: #1D9E8F; }
+  .hp.hp-ring .hp-ring-seg-coral { stroke: #D85A30; }
+  .hp.hp-ring .hp-ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .hp.hp-ring .hp-ring-num {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--theme-fg);
+    font-variant-numeric: tabular-nums;
+  }
+  .hp.hp-ring .hp-ring-unit {
+    font-size: 0.68rem;
+    color: var(--theme-muted);
+  }
+  .hp.hp-ring .hp-ring-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    font-size: 0.82rem;
+    color: var(--theme-fg);
+  }
+  .hp.hp-ring .hp-ring-legend span {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  .hp.hp-ring .hp-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .hp.hp-ring .hp-dot-blue { background: #2F5FE0; }
+  .hp.hp-ring .hp-dot-purple { background: #7B5CE0; }
+  .hp.hp-ring .hp-dot-teal { background: #1D9E8F; }
+  .hp.hp-ring .hp-dot-coral { background: #D85A30; }
+
+  /* ── 迷你趋势图 ── */
+  .hp.hp-spark {
+    padding: 1rem 1.2rem;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-radius-lg);
+  }
+  .dark .hp.hp-spark {
+    background: var(--theme-surface-elevated);
+  }
+  .hp.hp-spark .hp-spark-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+  }
+  .hp.hp-spark .hp-spark-title {
+    font-size: 0.8rem;
+    color: var(--theme-muted);
+  }
+  .hp.hp-spark .hp-spark-now {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--theme-accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .hp.hp-spark svg {
+    width: 100%;
+    height: 70px;
+    display: block;
+    overflow: visible;
+  }
+  .hp.hp-spark .hp-spark-area {
+    fill: url(#hp-spark-fill);
+    stroke: none;
+  }
+  .hp.hp-spark .hp-spark-line {
+    fill: none;
+    stroke: var(--theme-accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .hp.hp-spark .hp-spark-dot {
+    fill: var(--theme-accent);
+    stroke: var(--theme-surface);
+    stroke-width: 2;
+  }
+
+  /* ── CSS 条形图 ── */
+  .hp.hp-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 1.1rem 1.2rem;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-radius-lg);
+  }
+  .hp.hp-bars .hp-bar-row {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr auto;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+  }
+  .hp.hp-bars .hp-bar-label {
+    color: var(--theme-fg);
+    font-weight: 500;
+    text-align: right;
+  }
+  .hp.hp-bars .hp-bar-track {
+    height: 10px;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--theme-fg) 6%, transparent);
+    overflow: hidden;
+  }
+  .hp.hp-bars .hp-bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--theme-accent) 45%, transparent);
+  }
+  .hp.hp-bars .hp-bar-fill-accent {
+    background: var(--theme-accent);
+  }
+  .hp.hp-bars .hp-bar-val {
+    color: var(--theme-muted);
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  /* ── 分类色块图 ── */
+  .hp.hp-cat {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.6rem;
+  }
+  .hp.hp-cat .hp-cat-block {
+    border-radius: var(--theme-radius-md);
+    padding: 0.85rem 1rem;
+  }
+  .hp.hp-cat .hp-cat-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  .hp.hp-cat .hp-cat-sub {
+    font-size: 0.76rem;
+    line-height: 1.6;
+    opacity: 0.9;
+  }
+  .hp.hp-cat .hp-cat-blue { background: color-mix(in srgb, #2F5FE0 14%, var(--theme-surface)); }
+  .hp.hp-cat .hp-cat-blue .hp-cat-title,
+  .hp.hp-cat .hp-cat-blue .hp-cat-sub { color: color-mix(in srgb, #2F5FE0 70%, var(--theme-fg)); }
+  .hp.hp-cat .hp-cat-purple { background: color-mix(in srgb, #7B5CE0 14%, var(--theme-surface)); }
+  .hp.hp-cat .hp-cat-purple .hp-cat-title,
+  .hp.hp-cat .hp-cat-purple .hp-cat-sub { color: color-mix(in srgb, #7B5CE0 70%, var(--theme-fg)); }
+  .hp.hp-cat .hp-cat-teal { background: color-mix(in srgb, #1D9E8F 14%, var(--theme-surface)); }
+  .hp.hp-cat .hp-cat-teal .hp-cat-title,
+  .hp.hp-cat .hp-cat-teal .hp-cat-sub { color: color-mix(in srgb, #1D9E8F 70%, var(--theme-fg)); }
+  .hp.hp-cat .hp-cat-coral { background: color-mix(in srgb, #D85A30 14%, var(--theme-surface)); }
+  .hp.hp-cat .hp-cat-coral .hp-cat-title,
+  .hp.hp-cat .hp-cat-coral .hp-cat-sub { color: color-mix(in srgb, #D85A30 70%, var(--theme-fg)); }
+  .hp.hp-cat .hp-cat-green { background: color-mix(in srgb, #3F8F3F 14%, var(--theme-surface)); }
+  .hp.hp-cat .hp-cat-green .hp-cat-title,
+  .hp.hp-cat .hp-cat-green .hp-cat-sub { color: color-mix(in srgb, #3F8F3F 70%, var(--theme-fg)); }
+
+  /* ── 热力网格 ── */
+  .hp.hp-heat {
+    padding: 1.1rem 1.2rem;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-radius-lg);
+  }
+  .dark .hp.hp-heat {
+    background: var(--theme-surface-elevated);
+  }
+  .hp.hp-heat .hp-heat-cap {
+    font-size: 0.78rem;
+    color: var(--theme-muted);
+    margin-bottom: 0.75rem;
+  }
+  .hp.hp-heat .hp-heat-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+  }
+  .hp.hp-heat .hp-heat-grid .hp-heat-cell {
+    aspect-ratio: 1;
+    border-radius: 3px;
+  }
+  .hp.hp-heat .hp-heat-legend {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 0.9rem;
+    font-size: 0.72rem;
+    color: var(--theme-muted);
+  }
+  .hp.hp-heat .hp-heat-legend .hp-heat-cell {
+    width: 12px;
+    height: 12px;
+  }
+  .hp.hp-heat .hp-heat-cell {
+    display: inline-block;
+  }
+  .hp.hp-heat .hp-heat-0 { background: color-mix(in srgb, var(--theme-fg) 6%, transparent); }
+  .hp.hp-heat .hp-heat-1 { background: color-mix(in srgb, #1D9E8F 22%, var(--theme-surface)); }
+  .hp.hp-heat .hp-heat-2 { background: color-mix(in srgb, #1D9E8F 42%, var(--theme-surface)); }
+  .hp.hp-heat .hp-heat-3 { background: color-mix(in srgb, #1D9E8F 65%, var(--theme-surface)); }
+  .hp.hp-heat .hp-heat-4 { background: color-mix(in srgb, #1D9E8F 88%, var(--theme-surface)); }
+
+  /* ── 截图式终端卡片（固定配色，不跟随主题） ── */
+  .hp.hp-term {
+    background: #1C1E22;
+    border-radius: var(--theme-radius-lg);
+    padding: 0.9rem 1.1rem 1.1rem;
+    font-family: ui-monospace, monospace;
+  }
+  .hp.hp-term .hp-term-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+  .hp.hp-term .hp-term-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .hp.hp-term .hp-term-dot-r { background: #E5534B; }
+  .hp.hp-term .hp-term-dot-y { background: #D8A72B; }
+  .hp.hp-term .hp-term-dot-g { background: #3FB950; }
+  .hp.hp-term .hp-term-title {
+    margin-left: 0.4rem;
+    font-size: 0.75rem;
+    color: #8C8F98;
+  }
+  .hp.hp-term .hp-term-line {
+    font-size: 0.82rem;
+    color: #D8D6CE;
+    line-height: 1.7;
+  }
+  .hp.hp-term .hp-term-prompt {
+    color: #6E86D8;
+    margin-right: 0.4rem;
+  }
+  .hp.hp-term .hp-term-ok {
+    color: #3FB950;
+  }
+
+  /* ── 警示徽标卡片 ── */
+  .hp.hp-warn {
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-radius-md);
+    background: var(--theme-surface);
+    padding: 1rem 1.15rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+  .dark .hp.hp-warn {
+    background: var(--theme-surface-elevated);
+  }
+  .hp.hp-warn .hp-warn-x {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #C2412D;
+    background: color-mix(in srgb, #C2412D 12%, transparent);
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--theme-radius-sm);
+    white-space: nowrap;
+  }
+  .hp.hp-warn .hp-warn-body b {
+    display: block;
+    font-size: 0.92rem;
+    margin-bottom: 0.35rem;
+    color: var(--theme-fg);
+  }
+  .hp.hp-warn .hp-warn-body p {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    color: var(--theme-muted);
+    line-height: 1.7;
+  }
+  .hp.hp-warn .hp-warn-body p:last-child {
+    margin-bottom: 0;
+  }
+  .hp.hp-warn .hp-warn-body p.hp-warn-fix {
+    color: var(--theme-accent);
+    font-weight: 500;
+  }
+
+  /* ── 排序可视化 ── */
+  .hp.hp-sort {
+    padding: 1.2rem 1.2rem 1rem;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-radius-lg);
+  }
+  .hp.hp-sort .hp-sort-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 140px;
+  }
+  .hp.hp-sort .hp-sort-bar {
+    flex: 1 1 0;
+    border-radius: 3px 3px 0 0;
+    opacity: 0.5;
+    transition: height var(--theme-transition-fast), opacity var(--theme-transition-fast), outline-color var(--theme-transition-fast);
+  }
+  .hp.hp-sort .hp-sort-bar.is-active {
+    opacity: 1;
+    outline: 2px solid var(--theme-fg);
+    outline-offset: -2px;
+  }
+  .hp.hp-sort .hp-sort-bar.is-done {
+    opacity: 1;
+  }
+  .hp.hp-sort .hp-sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.9rem;
+  }
+  .hp.hp-sort .hp-sort-btn {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--theme-btn-fg);
+    background: var(--theme-btn-bg);
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: opacity var(--theme-transition-fast);
+  }
+  .hp.hp-sort .hp-sort-btn:hover {
+    opacity: 0.85;
+  }
+  .hp.hp-sort .hp-sort-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .hp.hp-sort .hp-sort-btn-ghost {
+    color: var(--theme-fg);
+    background: transparent;
+    border-color: var(--theme-border);
+  }
+  .hp.hp-sort .hp-sort-status {
+    font-size: 0.78rem;
+    color: var(--theme-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── 移动端 ── */
+  @media (max-width: 640px) {
+    .hp.hp-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .hp.hp-bars .hp-bar-row {
+      grid-template-columns: 5rem 1fr auto;
+      gap: 0.5rem;
+    }
+    .hp.hp-warn {
+      grid-template-columns: 1fr;
+      gap: 0.6rem;
+    }
+    .hp.hp-warn .hp-warn-x {
+      justify-self: start;
+    }
+  }
+</style>
+<script data-astro-rerun="">
+  (() => {
+    const root = document.getElementById('hp-sort-viz');
+    if (!root || root.dataset.init) return;
+    root.dataset.init = '1';
+
+    const barsEl = root.querySelector('.hp-sort-bars');
+    const playBtn = root.querySelector('[data-sort-play]');
+    const resetBtn = root.querySelector('[data-sort-reset]');
+    const statusEl = root.querySelector('[data-sort-status]');
+    const COUNT = 18;
+    let values = [];
+    let playing = false;
+
+    const colorFor = (v) => `hsl(${220 - v * 1.9}, 65%, 55%)`;
+
+    const render = () => {
+      barsEl.innerHTML = '';
+      values.forEach((v) => {
+        const bar = document.createElement('div');
+        bar.className = 'hp-sort-bar';
+        bar.style.height = `${v}%`;
+        bar.style.background = colorFor(v);
+        barsEl.appendChild(bar);
+      });
+    };
+
+    const shuffle = () => {
+      values = Array.from({ length: COUNT }, () => 12 + Math.floor(Math.random() * 88));
+      playing = false;
+      playBtn.disabled = false;
+      statusEl.textContent = '就绪';
+      render();
+    };
+
+    const play = () => {
+      if (playing) return;
+      playing = true;
+      playBtn.disabled = true;
+      const bars = Array.from(barsEl.children);
+      let i = 0;
+      let j = 0;
+      let swaps = 0;
+      let last = 0;
+
+      const step = (now) => {
+        if (!root.isConnected || !playing) return;
+        if (now - last < 45) {
+          requestAnimationFrame(step);
+          return;
+        }
+        last = now;
+        bars.forEach((b) => b.classList.remove('is-active'));
+        if (i >= values.length - 1) {
+          bars.forEach((b) => b.classList.add('is-done'));
+          statusEl.textContent = `完成，共交换 ${swaps} 次`;
+          playing = false;
+          return;
+        }
+        const a = bars[j];
+        const b = bars[j + 1];
+        a.classList.add('is-active');
+        b.classList.add('is-active');
+        if (values[j] > values[j + 1]) {
+          [values[j], values[j + 1]] = [values[j + 1], values[j]];
+          a.style.height = `${values[j]}%`;
+          a.style.background = colorFor(values[j]);
+          b.style.height = `${values[j + 1]}%`;
+          b.style.background = colorFor(values[j + 1]);
+          swaps += 1;
+        }
+        statusEl.textContent = `第 ${i + 1} 轮 · 交换 ${swaps} 次`;
+        j += 1;
+        if (j >= values.length - 1 - i) {
+          bars[values.length - 1 - i].classList.add('is-done');
+          j = 0;
+          i += 1;
+        }
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+
+    playBtn.addEventListener('click', play);
+    resetBtn.addEventListener('click', () => {
+      barsEl.querySelectorAll('.hp-sort-bar').forEach((b) => b.classList.remove('is-done', 'is-active'));
+      shuffle();
+    });
+    shuffle();
+  })();
+</script> </div> </div> <div data-reward-root class="reward-container relative"> <button class="reward-like-btn" data-reward-like data-article-id="21bc015023eaac16" data-server-url="https://api.wqlblog.cn" aria-label="Like this post" title="Like"> <svg class="reward-like-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M7 10v12"></path> <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"></path> </svg> <span class="reward-like-count">—</span> </button> <p class="reward-line">
+如果这篇对你有帮助，可以
+<span class="reward-trigger inline-block" data-reward-open role="status" aria-expanded="false">请我喝杯咖啡</span> </p> <p class="reward-license">
+本文采用
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer license" class="no-underline">CC BY-NC-SA 4.0</a>
+协议，转载请注明出处
+</p> <div class="reward-popover invisible absolute left-0 right-0 mx-auto bottom-full mb-3 w-[500px] max-w-[90vw] pointer-events-none z-[9999]" data-reward-popover aria-hidden="true"> <div class="rounded-2xl p-4" style="border: 1px solid var(--theme-border); background: var(--theme-surface-elevated); box-shadow: var(--theme-shadow-md)"> <img src="/img/donate.png" alt="Donation QR code" class="mx-auto w-full h-auto rounded-lg"> <p class="text-center text-sm mt-2" style="color: var(--theme-muted)">Thank you for your support!</p> </div> </div> </div> <script type="module">function r(){document.querySelectorAll("[data-reward-root]").forEach(t=>{if(!(t instanceof HTMLElement)||t.dataset.rewardInitialized==="1")return;const a=t.querySelector("[data-reward-open]"),e=t.querySelector("[data-reward-popover]");if(a&&e instanceof HTMLElement){let n;const d=()=>{clearTimeout(n),e.classList.add("reward-popover-open"),e.setAttribute("aria-hidden","false"),a.setAttribute("aria-expanded","true")},o=()=>{n=setTimeout(()=>{e.classList.remove("reward-popover-open"),e.setAttribute("aria-hidden","true"),a.setAttribute("aria-expanded","false")},100)};a.addEventListener("mouseenter",d),e.addEventListener("mouseenter",d),a.addEventListener("mouseleave",o),e.addEventListener("mouseleave",o),t.dataset.rewardInitialized="1"}})}r();document.addEventListener("astro:page-load",r);document.addEventListener("astro:after-swap",r);</script> <!-- 上一篇 / 下一篇 --><nav class="article-post-nav"> <a href="/posts/驯服_Claude_Code：七种引导它行为的方式/" class="post-nav-link post-nav-prev"> <span class="post-nav-label"> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+上一篇
+</span> <span class="post-nav-title">驯服 Claude Code：七种引导它行为的方式</span> </a> <a href="/posts/量化金融中的因子评价指标：IC、Rank_IC、ICIR_等/" class="post-nav-link post-nav-next"> <span class="post-nav-label">
+下一篇
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg> </span> <span class="post-nav-title">量化金融中的因子评价指标：IC、Rank IC、ICIR 等</span> </a> </nav> <section class="related-posts-section"><h2 class="related-posts-title">延伸阅读</h2><div class="related-posts-list"><a class="related-post-row" href="/posts/Mermaid_Example/"><span class="related-post-title">Mermaid Example</span><span class="related-post-meta"><time datetime="2022-01-01T00:00:00.000Z"> Jan 1 </time></span></a><a class="related-post-row" href="/posts/Encryption_Example/"><span class="related-post-title">Encryption Example</span><span class="related-post-meta"><time datetime="2022-01-01T00:00:00.000Z"> Jan 1 </time></span></a><a class="related-post-row" href="/posts/Guide_for_Template_-_Getting_Started/"><span class="related-post-title">Guide for Template - Getting Started</span><span class="related-post-meta"><time datetime="2022-01-01T00:00:00.000Z"> Jan 1 </time></span></a><a class="related-post-row" href="/posts/Extended_Features/"><span class="related-post-title">Extended Features</span><span class="related-post-meta"><time datetime="2022-01-01T00:00:00.000Z"> Jan 1 </time></span></a><a class="related-post-row" href="/posts/Guide_for_Template_-_Advanced_Customization/"><span class="related-post-title">Guide for Template - Advanced Customization</span><span class="related-post-meta"><time datetime="2022-01-01T00:00:00.000Z"> Jan 1 </time></span></a><a class="related-post-row" href="/posts/Video_Example/"><span class="related-post-title">Video Example</span><span class="related-post-meta"><time datetime="2022-01-01T00:00:00.000Z"> Jan 1 </time></span></a></div></section> <div id="comments-section" class="article-comments-section is-comments-loading"><div id="waline" data-comment-system="waline" data-waline-path="21bc015023eaac16"></div> <div class="waline-loading" aria-hidden="true"> <span class="waline-loading-spinner"></span> <span class="waline-loading-text">评论加载中…</span> </div> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@waline/client@v3/dist/waline.css"> <script>(function(){const walineOptions = {"el":"#waline","path":"21bc015023eaac16","serverURL":"https://api.wqlblog.cn","dark":"html.dark","requiredMeta":["nick","mail"],"emoji":["https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/bilibili/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/qq/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/tieba/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/weibo/"],"search":false,"lang":"zh","pageview":true};
+const allowedCommentDomains = [];
+const allowLocalInDev = false;
+const walineClientCDNBase = "https://cdn.jsdelivr.net/npm/@waline/client@v3/dist";
+
+    window.__walineConfig = { walineOptions, allowedCommentDomains, allowLocalInDev, walineClientCDNBase };
+})();</script> <script type="module" src="/_astro/Waline.astro_astro_type_script_index_0_lang.BDyriLpI.js"></script></div> </article> </main> </div> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				document.querySelectorAll('[data-edge-toggle]').forEach(function(btn) {
+					var side = btn.dataset.edgeToggle;
+					var c = !!s[side];
+					if (c) btn.classList.add('is-collapsed');
+				});
+			} catch(e) {}
+		})();
+		</script> <aside class="article-fab" aria-label="Article actions"> <button class="fab-btn" data-fab="top" aria-label="Back to top" title="Back to top"> <span class="fab-ring"></span> <svg class="fab-progress-ring" viewBox="0 0 38 38" aria-hidden="true"> <circle cx="19" cy="19" r="17"></circle> <circle class="fab-progress-fill" cx="19" cy="19" r="17"></circle> </svg> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 19V5M5 12l7-7 7 7"></path> </svg> </span> </button> <button class="fab-btn sidebar-dependent-hide" data-fab="drawer" aria-label="Table of contents" title="Table of contents" data-mobile-drawer-toggle aria-expanded="false" aria-controls="mobileDrawer"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 12h18M3 6h18M3 18h18"></path> </svg> </span> </button> <button class="fab-btn" data-comments-jump data-article-id="21bc015023eaac16" data-server-url="https://api.wqlblog.cn" aria-label="Comments" title="Comments"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path> </svg> <span class="fab-badge waline-comment-count" data-comments-count data-path="21bc015023eaac16">—</span> </span> </button> </aside> </div> <script type="module" src="/_astro/_...slug_.astro_astro_type_script_index_0_lang.D1pIFJ8_.js"></script>  </div> <footer class="container mt-8"> <div class="py-4 border-t theme-divider text-sm theme-muted"> <div class="text-center space-y-1 md:space-y-0 md:grid md:grid-cols-3 md:items-center"> <div class="md:text-left">Copyright © 2026</div> <div class="md:text-center"> <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--theme-fg)] transition-colors"> 黔ICP备2022002432号 </a> </div> <div class="md:text-right">Built with Astro.</div> </div> </div> </footer> <div id="waline-config" data-server-url="https://api.wqlblog.cn" hidden></div> <script type="module">function m(e){if(!e)return"";try{return new URL(e,window.location.href).href}catch{return e}}function y(e){return e.currentSrc||e.getAttribute("data-src")||e.getAttribute("src")||""}function g(e,t){const r=y(e);if(!r)return;const n=e.closest("picture")||e,o=n.parentElement;if(!o)return;if(o.tagName==="A"){const s=o,i=m(s.getAttribute("href")),l=m(r);!s.dataset.fancybox&&(!i||i===l)&&(s.setAttribute("href",r),s.dataset.fancybox=t),e.alt&&!s.dataset.caption&&(s.dataset.caption=e.alt),s.classList.add("previewable-link");return}const c=document.createElement("a");c.href=r,c.dataset.fancybox=t,c.dataset.caption=e.alt||"",c.className="previewable-link",o.insertBefore(c,n),c.appendChild(n)}function b(e,t,r){let a=r;e?.getCarousel?.()?.on("change",(n,o)=>{a=o}),e?.on?.("destroy",()=>{const n=t[a]??t[r];n instanceof HTMLElement&&setTimeout(()=>{n.scrollIntoView({block:"nearest",behavior:"instant"})},0)})}function h(){return{Hash:!1,hideScrollbar:!1,Thumbs:{autoStart:!0,showOnStart:"yes"},Toolbar:{display:{left:["infobar"],middle:["zoomIn","zoomOut","toggle1to1"],right:["slideshow","thumbs","close"]}},animated:!0,dragToClose:!0,keyboard:{Escape:"close",Delete:"close",Backspace:"close",PageUp:"next",PageDown:"prev",ArrowUp:"next",ArrowDown:"prev",ArrowRight:"next",ArrowLeft:"prev"},fitToView:!0,preload:3,infinite:!0,Panzoom:{maxScale:3,minScale:1},Carousel:{transition:"slide",preload:2}}}function d(){const e=window.Fancybox||window?.["@fancyapps/ui"]?.Fancybox;!e||typeof e.fromNodes!="function"||(document.querySelectorAll(".prose").forEach((t,r)=>{if(!(t instanceof HTMLElement))return;const a=`post-gallery-${r}`;t.dataset.previewGallery=a,t.querySelectorAll("img").forEach(n=>{n instanceof HTMLImageElement&&(n.classList.add("previewable-image"),g(n,a))})}),!document.__fancyboxClickBound&&(document.__fancyboxClickBound=!0,document.addEventListener("click",t=>{const a=(t.target instanceof Element?t.target:null)?.closest("a[data-fancybox], a[data-mermaid-gallery]");if(!(a instanceof HTMLAnchorElement))return;const n=a.closest(".prose");if(!(n instanceof HTMLElement))return;t.preventDefault(),t.stopPropagation();const o="mermaidGallery"in a.dataset,c=o?a.dataset.mermaidGallery:a.dataset.fancybox,s=o?`a[data-mermaid-gallery="${c}"]`:c?`a[data-fancybox="${c}"]`:"a[data-fancybox]",i=Array.from(n.querySelectorAll(s)).filter(p=>p instanceof HTMLAnchorElement),l=i.indexOf(a);if(i.length===0)return;const u=l>=0?l:0,f=e.fromNodes(i,{...h(),startIndex:u,triggerEl:a,placeFocusBack:!1});o&&setTimeout(()=>{(f??e.getInstance())?.getContainer?.()?.classList.add("is-mermaid-gallery")},0),b(f??e.getInstance(),i,u)},!0)))}d();window.addEventListener("load",d);document.addEventListener("astro:page-load",d);document.addEventListener("astro:after-swap",d);</script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_1_lang.BxB3k7tA.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_2_lang.CHCRmhs5.js"></script> <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.umd.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_3_lang.mMDGy5WK.js"></script> </body> </html>

@@ -1,0 +1,793 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CDGfc0hd.js"></script> <!-- Global Metadata --> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <link rel="icon" type="image/x-icon" href="/favicon.ico"> <!-- 字体 CDN（jsDelivr，全球 CDN 含中国节点） --> <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin> <!-- Waline 评论/统计后端：提前建连，减少评论区首个请求的握手延迟 --> <link rel="preconnect" href="https://api.wqlblog.cn" crossorigin> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.css"> <meta name="generator" content="Astro v5.18.1"> <script>
+	(() => {
+		const MODE_KEY = 'theme-mode';
+		const root = document.documentElement;
+		const stored = localStorage.getItem(MODE_KEY) || localStorage.getItem('theme');
+		const mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+		const effective = mode === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : mode;
+
+		root.dataset.themeMode = mode;
+		root.classList.toggle('dark', effective === 'dark');
+		root.dataset.theme = effective;
+	})();
+</script> <!-- Canonical URL --> <link rel="canonical" href="https://www.wqlblog.cn/posts/02-Skill%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%9A%E7%BB%99AI%E6%B3%A8%E5%85%A5%E9%A2%86%E5%9F%9F%E4%B8%93%E4%B8%9A%E7%9F%A5%E8%AF%86%E7%9A%84%E8%89%BA%E6%9C%AF/"> <!-- Primary Meta Tags --> <title>02-Skill深度解析：给AI注入领域专业知识的艺术 - KelrinWu&#39;s Blog</title> <meta name="title" content="02-Skill深度解析：给AI注入领域专业知识的艺术 - KelrinWu's Blog"> <meta name="description" content="02-Skill深度解析：给AI注入领域专业知识的艺术"> <!-- Open Graph / Facebook --> <meta property="og:type" content="website"> <meta property="og:url" content="https://www.wqlblog.cn/posts/02-Skill%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%9A%E7%BB%99AI%E6%B3%A8%E5%85%A5%E9%A2%86%E5%9F%9F%E4%B8%93%E4%B8%9A%E7%9F%A5%E8%AF%86%E7%9A%84%E8%89%BA%E6%9C%AF/"> <meta property="og:title" content="02-Skill深度解析：给AI注入领域专业知识的艺术"> <meta property="og:description" content="02-Skill深度解析：给AI注入领域专业知识的艺术"> <meta property="og:image" content="https://www.wqlblog.cn/favicon.ico"> <!-- Twitter --> <meta property="twitter:card" content="summary_large_image"> <meta property="twitter:url" content="https://www.wqlblog.cn/posts/02-Skill%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%9A%E7%BB%99AI%E6%B3%A8%E5%85%A5%E9%A2%86%E5%9F%9F%E4%B8%93%E4%B8%9A%E7%9F%A5%E8%AF%86%E7%9A%84%E8%89%BA%E6%9C%AF/"> <meta property="twitter:title" content="02-Skill深度解析：给AI注入领域专业知识的艺术"> <meta property="twitter:description" content="02-Skill深度解析：给AI注入领域专业知识的艺术"> <meta property="twitter:image" content="https://www.wqlblog.cn/favicon.ico"><link rel="stylesheet" href="/_astro/_...slug_.WBhVMAu6.css">
+<link rel="stylesheet" href="/_astro/_slug_.ISP7CH_S.css">
+<link rel="stylesheet" href="/_astro/_slug_.3GJi6cRf.css">
+<link rel="stylesheet" href="/_astro/thoughts.CbYNSEou.css"></head> <body> <header id="site-header" class="site-header"> <div class="site-header-inner container"> <!-- Brand --> <a href="/" class="header-brand" aria-label="KelrinWu's Blog"> <img src="/img/avatar.png" alt="KelrinWu's Blog" class="header-avatar" width="32" height="32"> <span class="header-brand-name">KelrinWu&#39;s Blog</span> </a> <!-- Desktop nav links (hidden on mobile) --> <nav class="header-nav" aria-label="Main navigation"> <a href="/about/" class="header-nav-link" data-text="About"> About </a><a href="/posts/" class="header-nav-link is-active" data-text="Posts"> Posts </a><a href="/thoughts/" class="header-nav-link" data-text="Thoughts"> Thoughts </a><a href="/projects/" class="header-nav-link" data-text="Projects"> Projects </a><a href="/friends/" class="header-nav-link" data-text="Friends"> Friends </a><a href="/archive/" class="header-nav-link" data-text="Archive"> Archive </a> </nav> <!-- Right: actions + hamburger --> <div class="header-right"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> <button id="mobileNavToggle" class="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavMenu" type="button"> <span class="ham-line"></span> <span class="ham-line"></span> <span class="ham-line"></span> </button> </div> </div> <!-- Mobile dropdown menu --> <div id="mobileNavMenu" class="mobile-nav-menu" aria-hidden="true"> <a href="/about/" class="mobile-nav-item"> About </a><a href="/posts/" class="mobile-nav-item is-active"> Posts </a><a href="/thoughts/" class="mobile-nav-item"> Thoughts </a><a href="/projects/" class="mobile-nav-item"> Projects </a><a href="/friends/" class="mobile-nav-item"> Friends </a><a href="/archive/" class="mobile-nav-item"> Archive </a> </div> <script type="module" src="/_astro/Header.astro_astro_type_script_index_0_lang.DO65IW0S.js"></script> </header> <div id="mobileDrawer" class="mobile-drawer fixed inset-0 z-[1150] pointer-events-none sidebar-dependent-hide" aria-hidden="true"> <button class="mobile-drawer-backdrop absolute inset-0 border-0 bg-slate-900/34 backdrop-blur-lg opacity-0 transition-opacity duration-180" type="button" data-mobile-drawer-close aria-label="Close navigation menu"></button> <aside class="mobile-drawer-panel absolute inset-y-0 right-0 w-[min(84vw,22rem)] h-full border-l border-[var(--theme-border)] backdrop-blur-[22px] shadow-[0_24px_60px_rgba(15,23,42,0.16)] p-4 pb-6 overflow-y-auto translate-x-full transition-transform duration-[220ms] ease-[ease] theme-surface-float" role="dialog" aria-modal="true" aria-label="Article menu"> <div class="mobile-drawer-head flex items-center justify-between gap-4 mb-5"> <div class="text-[1.05rem] font-bold text-[var(--theme-fg)]">Contents</div> <button class="mobile-drawer-close inline-flex items-center justify-center w-10 h-10 flex-shrink-0" type="button" data-mobile-drawer-close aria-label="Close menu"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="mobile-drawer-extra grid gap-4">  <div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem]">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#skill-深度解析给-ai-注入领域专业知识的艺术" data-index="0" data-parent-index="-1" data-depth="1" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> Skill 深度解析：给 AI 注入领域专业知识的艺术 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#一skill-解决什么问题" data-index="1" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 一、Skill 解决什么问题？ </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#11-llm-的知识边界困境" data-index="2" data-parent-index="1" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 1.1 LLM 的“知识边界”困境 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#12-skill-的本质" data-index="3" data-parent-index="1" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 1.2 Skill 的本质 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#二claude-code-的-skill-体系" data-index="4" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 二、Claude Code 的 Skill 体系 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#三skillmd-文件结构" data-index="5" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 三、SKILL.md 文件结构 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#31-最小可用结构" data-index="6" data-parent-index="5" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 3.1 最小可用结构 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#32-name-与-description" data-index="7" data-parent-index="5" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 3.2 name 与 description </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#33-skill-内容主体" data-index="8" data-parent-index="5" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 3.3 Skill 内容主体 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#34-frontmatter-常用字段" data-index="9" data-parent-index="5" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 3.4 Frontmatter 常用字段 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#四渐进式加载" data-index="10" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 四、渐进式加载 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#五安装触发与管理" data-index="11" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 五、安装、触发与管理 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#51-安装别人的-skill" data-index="12" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.1 安装别人的 Skill </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#52-创建自己的-skill" data-index="13" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.2 创建自己的 Skill </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#53-自动触发与手动触发" data-index="14" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.3 自动触发与手动触发 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#54-控制触发行为" data-index="15" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.4 控制触发行为 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#55-管理和排查" data-index="16" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.5 管理和排查 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#六核心文件与目录详解" data-index="17" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 六、核心文件与目录详解 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#61-skillmd技能入口" data-index="18" data-parent-index="17" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 6.1 SKILL.md：技能入口 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#62-references详细知识库" data-index="19" data-parent-index="17" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 6.2 references/：详细知识库 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#63-examples正反示例" data-index="20" data-parent-index="17" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 6.3 examples/：正反示例 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#64-scripts确定性工具" data-index="21" data-parent-index="17" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 6.4 scripts/：确定性工具 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#七实战案例代码审查-skill" data-index="22" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 七、实战案例：代码审查 Skill </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#八skill-与-mcp-的关系" data-index="23" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 八、Skill 与 MCP 的关系 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#九推荐-skill-体系" data-index="24" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 九、推荐 Skill 体系 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#十总结" data-index="25" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 十、总结 </span> </a> </div>  </div> </nav><script type="module">function v(){document.querySelectorAll(".toc-scrollbar-container").forEach(s=>{const b=s.querySelector(".toc-scrollbar-wrap"),m=s.querySelector(".toc-custom-scrollbar"),p=s.querySelector(".toc-custom-scrollbar-thumb");if(!b||!m||!p)return;const t=b,h=m,n=p;function o(){const{scrollTop:r,scrollHeight:l,clientHeight:e}=t;if(l<=e){h.style.display="none";return}h.style.display="";const u=e/l,a=Math.max(16,u*e),i=e-a,d=r/(l-e)*i;n.style.height=`${a}px`,n.style.transform=`translateY(${d}px)`}if(o(),s.dataset.scrollbarBound==="true")return;s.dataset.scrollbarBound="true",t.addEventListener("scroll",o,{passive:!0}),new ResizeObserver(o).observe(t),new MutationObserver(o).observe(t,{childList:!0,subtree:!0,attributes:!0,attributeFilter:["class","style"]}),t.addEventListener("transitionend",o,{passive:!0});let c=!1,y=0,f=0;n.addEventListener("mousedown",r=>{r.preventDefault(),c=!0,y=r.clientY,f=t.scrollTop,document.body.style.userSelect="none"}),window.addEventListener("mousemove",r=>{if(!c)return;const{scrollHeight:l,clientHeight:e}=t,u=n.offsetHeight,a=e-u,i=r.clientY-y,d=l-e;t.scrollTop=f+i/a*d}),window.addEventListener("mouseup",()=>{c&&(c=!1,document.body.style.userSelect="")})})}v();document.addEventListener("astro:after-swap",v);</script> </div>  </div> </aside> </div> <script type="module" src="/_astro/MobileDrawer.astro_astro_type_script_index_0_lang.QZyAK5kg.js"></script> <div id="searchOverlay" class="search-overlay hidden" aria-hidden="true"> <div class="search-backdrop" data-search-close></div> <div class="search-panel" role="dialog" aria-modal="true" aria-labelledby="searchTitle"> <div class="search-head"> <div> <div id="searchTitle" class="search-title">Search</div> <div class="search-subtitle">Search by title, tag or description</div> </div> <button class="search-close" id="searchClose" type="button" aria-label="Close search"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="search-input-shell"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="11" cy="11" r="8"></circle> <path d="m21 21-4.35-4.35"></path> </svg> <input id="searchInput" class="search-input" type="search" placeholder="Try searching Transformer, database, MCP..." autocomplete="off"> </div> <div id="searchMeta" class="search-meta">Press <kbd>/</kbd> to open, <kbd>Esc</kbd> to close</div> <div id="searchResults" class="search-results"> <div class="search-empty"> <div class="search-empty-title">Start searching</div> <div class="search-empty-text">Matching posts will appear here in real time.</div> </div> </div> </div> </div> <script type="module" src="/_astro/SearchOverlay.astro_astro_type_script_index_0_lang.CCrLlu7v.js"></script> <div class="py-8 min-h-[calc(100vh-160px)]">   <div class="article-page-shell"> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				var g = document.querySelector('.article-desktop-grid');
+				if (!g) return;
+				g.style.transition = 'none';
+				if (s.right) g.classList.add('sidebar-right-collapsed');
+				g.offsetHeight;
+				g.style.transition = '';
+			} catch(e) {}
+		})();
+		</script> <div class="container article-desktop-grid group/scroll"> <aside class="article-right-rail" data-sidebar="right"> <div class="sidebar-toggle-wrapper sidebar-toggle-wrapper-right"> <button class="sidebar-toggle-btn sidebar-toggle-right" data-edge-toggle="right" aria-label="Toggle TOC sidebar"> <svg width="14" height="160" viewBox="0 0 14 160" fill="none" xmlns="http://www.w3.org/2000/svg"> <defs> <linearGradient id="gtr" x1="0" y1="0" x2="0" y2="73" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0.5"></stop> </linearGradient> <linearGradient id="gbr" x1="0" y1="87" x2="0" y2="160" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0.5"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop> </linearGradient> </defs> <line x1="7" y1="0" x2="7" y2="73" stroke="url(#gtr)" stroke-width="1"></line> <path d="M7 73 L11 80 L7 87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <line x1="7" y1="87" x2="7" y2="160" stroke="url(#gbr)" stroke-width="1"></line> </svg> </button> </div> <div class="article-rail-inner" data-sidebar-content="right"> <div class="toc-sticky-inner"> <div class="article-rail-dock article-rail-dock-right" data-article-header-dock="right" data-clone-ready="true"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> </div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem] toc-scrollbar-wrap max-h-[calc(100vh-70px)] overflow-y-auto">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#skill-深度解析给-ai-注入领域专业知识的艺术" data-index="0" data-parent-index="-1" data-depth="1" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> Skill 深度解析：给 AI 注入领域专业知识的艺术 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#一skill-解决什么问题" data-index="1" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 一、Skill 解决什么问题？ </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#11-llm-的知识边界困境" data-index="2" data-parent-index="1" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 1.1 LLM 的“知识边界”困境 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#12-skill-的本质" data-index="3" data-parent-index="1" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 1.2 Skill 的本质 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#二claude-code-的-skill-体系" data-index="4" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 二、Claude Code 的 Skill 体系 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#三skillmd-文件结构" data-index="5" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 三、SKILL.md 文件结构 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#31-最小可用结构" data-index="6" data-parent-index="5" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 3.1 最小可用结构 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#32-name-与-description" data-index="7" data-parent-index="5" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 3.2 name 与 description </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#33-skill-内容主体" data-index="8" data-parent-index="5" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 3.3 Skill 内容主体 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#34-frontmatter-常用字段" data-index="9" data-parent-index="5" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 3.4 Frontmatter 常用字段 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#四渐进式加载" data-index="10" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 四、渐进式加载 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#五安装触发与管理" data-index="11" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 五、安装、触发与管理 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#51-安装别人的-skill" data-index="12" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.1 安装别人的 Skill </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#52-创建自己的-skill" data-index="13" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.2 创建自己的 Skill </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#53-自动触发与手动触发" data-index="14" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.3 自动触发与手动触发 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#54-控制触发行为" data-index="15" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.4 控制触发行为 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#55-管理和排查" data-index="16" data-parent-index="11" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 5.5 管理和排查 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#六核心文件与目录详解" data-index="17" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 六、核心文件与目录详解 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#61-skillmd技能入口" data-index="18" data-parent-index="17" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 6.1 SKILL.md：技能入口 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#62-references详细知识库" data-index="19" data-parent-index="17" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 6.2 references/：详细知识库 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#63-examples正反示例" data-index="20" data-parent-index="17" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 6.3 examples/：正反示例 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#64-scripts确定性工具" data-index="21" data-parent-index="17" data-depth="3" data-level="2" aria-hidden="true" style="--toc-level:2;"> <span class="toc-entry-label font-normal"> 6.4 scripts/：确定性工具 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#七实战案例代码审查-skill" data-index="22" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 七、实战案例：代码审查 Skill </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#八skill-与-mcp-的关系" data-index="23" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 八、Skill 与 MCP 的关系 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#九推荐-skill-体系" data-index="24" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 九、推荐 Skill 体系 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#十总结" data-index="25" data-parent-index="0" data-depth="2" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 十、总结 </span> </a> </div> <div class="toc-custom-scrollbar"> <div class="toc-custom-scrollbar-thumb"></div> </div> </div> </nav> </div> </div> </aside> <main class="grow article-main-column"> <article class="article-main-panel"> <div class="prose max-w-none dark:prose-invert
+  prose-img:rounded-xl prose-img:mx-auto prose-img:block
+  prose-h1:target:pt-20 prose-h2:target:pt-20 prose-h3:target:pt-20
+  prose-code:before:content-none prose-code:after:content-none
+  prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md">  <div class="article-title-block"> <!-- 1. 返回链接 --> <a href="/posts/" class="article-back-link" data-back-link> <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <polyline points="15 18 9 12 15 6"></polyline> </svg>
+Back to Posts
+</a> <!-- 2. 标题 --> <h1 class="article-title">02-Skill深度解析：给AI注入领域专业知识的艺术</h1> <!-- 3. 分类/标签 + meta：合并为一行 flex，窄屏自然换行 --> <div class="article-header-inline-row"> <div class="article-label-row"> <a href="/archive/?category=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD" class="pill-tag px-2 py-0.5 text-xs no-underline">人工智能</a><a href="/archive/?category=%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5" class="pill-tag px-2 py-0.5 text-xs no-underline">工程实践</a> <a href="/archive/?tag=%E5%BC%80%E5%8F%91%E5%B7%A5%E5%85%B7" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;开发工具</a><a href="/archive/?tag=MCP" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;MCP</a><a href="/archive/?tag=Skills" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;Skills</a><a href="/archive/?tag=ClaudeCode" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;ClaudeCode</a> </div> <div class="article-meta-row"> <div class="flex items-center gap-1" title="Published"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect> <line x1="16" y1="2" x2="16" y2="6"></line> <line x1="8" y1="2" x2="8" y2="6"></line> <line x1="3" y1="10" x2="21" y2="10"></line> </svg> <time datetime="2026-03-21T00:00:00.000Z"> Mar 21, 2026 </time> </div> <div class="flex items-center gap-1" title="Reading time"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <polyline points="12 6 12 12 16 14"></polyline> </svg> <span>24 min read</span> </div> <div class="flex items-center gap-1" title="Views"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path> <circle cx="12" cy="12" r="3"></circle> </svg> <span class="waline-pageview-count" data-path="4a54ecfb29064ed6">—</span> </div> </div> </div> <!-- 4. 分割线 --> <div class="article-title-divider"></div> </div> <div class="article-content"> <h1 id="skill-深度解析给-ai-注入领域专业知识的艺术"><a href="#skill-深度解析给-ai-注入领域专业知识的艺术">Skill 深度解析：给 AI 注入领域专业知识的艺术</a><a href="#skill-深度解析给-ai-注入领域专业知识的艺术" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="skill-深度解析给-ai-注入领域专业知识的艺术"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h1>
+<blockquote>
+<p><strong>系列文章</strong>：本文是「MCP 与 Skill 技术体系」三篇系列的第二篇，聚焦于 Claude Code Skill 的设计思想与工程实践。</p>
+</blockquote>
+<p><img  loading="lazy" decoding="async" fetchpriority="auto" width="1402" height="1122" src="/_astro/ChatGPT%20Image%202026%E5%B9%B45%E6%9C%8814%E6%97%A5%2022_50_01.CtsY8xdE_1yXK8Q.webp" ></p>
+<h2 id="一skill-解决什么问题"><a href="#一skill-解决什么问题">一、Skill 解决什么问题？</a><a href="#一skill-解决什么问题" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="一skill-解决什么问题"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<h3 id="11-llm-的知识边界困境"><a href="#11-llm-的知识边界困境">1.1 LLM 的“知识边界”困境</a><a href="#11-llm-的知识边界困境" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="11-llm-的知识边界困境"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>大语言模型拥有海量通用知识，但在具体项目里，经常会出现一种尴尬情况：它很聪明，却不够“懂你”。</p>
+<p>例如：</p>
+<ul>
+<li><strong>不了解你的代码库约定</strong>：团队要求所有 API 错误必须返回 <code>{ code, message, data }</code>，但模型并不知道；</li>
+<li><strong>不懂你的领域术语</strong>：公司内部把“归因分析”叫作 attribution，把某个内部框架叫 Phoenix，模型一开始没有这些背景；</li>
+<li><strong>无法复用专家经验</strong>：资深工程师总结了一套代码审查 checklist，但每次对话都要重新粘贴；</li>
+<li><strong>风格不稳定</strong>：注释风格、变量命名、测试结构、提交说明，每次生成都可能不一样。</li>
+</ul>
+<p>这些问题不是 MCP 主要解决的。</p>
+<p>MCP 更偏向解决：<strong>AI 能访问哪些外部工具和数据源</strong>。</p>
+<p>比如：</p>
+<ul>
+<li>读取数据库；</li>
+<li>调用 GitHub；</li>
+<li>查询文件系统；</li>
+<li>操作浏览器；</li>
+<li>调用公司内部 API。</li>
+</ul>
+<p>而 Skill 更偏向解决：<strong>AI 在特定场景下应该如何思考、如何行动、遵守什么规范</strong>。</p>
+<p>一句话概括：</p>
+<blockquote>
+<p>MCP 给 AI 接工具，Skill 给 AI 注入专业工作方法。</p>
+</blockquote>
+<h3 id="12-skill-的本质"><a href="#12-skill-的本质">1.2 Skill 的本质</a><a href="#12-skill-的本质" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="12-skill-的本质"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>Claude Code 的 Skill，本质上是一种<strong>可复用的专业能力包</strong>。</p>
+<p>更准确地说，<strong>一个包含 <code>SKILL.md</code> 的目录就是一个 Skill</strong>。它可以很轻，也可以很重：轻量 Skill 可能只有几十行规则；复杂 Skill 则可以附带参考文档、示例、脚本和静态资源。</p>
+<p>Skill 的几个典型特点是：</p>
+<ul>
+<li><strong>可复用</strong>：一次编写，以后在相同任务里反复使用，不需要每次重新粘贴提示词；</li>
+<li><strong>可分享</strong>：本质是文件目录，可以通过 Git、插件市场或团队仓库共享；</li>
+<li><strong>可自动触发</strong>：Claude Code 会根据 <code>description</code> 判断当前任务是否匹配某个 Skill；</li>
+<li><strong>也可手动触发</strong>：当你明确知道要使用某个 Skill 时，可以用斜杠命令调用。</li>
+</ul>
+<h2 id="二claude-code-的-skill-体系"><a href="#二claude-code-的-skill-体系">二、Claude Code 的 Skill 体系</a><a href="#二claude-code-的-skill-体系" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="二claude-code-的-skill-体系"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>Claude Code 的 Skill 是以 <code>SKILL.md</code> 为核心的目录结构。根据作用范围不同，常见位置可以分为几类：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span># 用户级 Skill：对所有项目生效，适合个人常用习惯</span></span>
+<span class="line" data-line="2"><span>~/.claude/</span></span>
+<span class="line" data-line="3"><span>└── skills/</span></span>
+<span class="line" data-line="4"><span>    └── skill-name/</span></span>
+<span class="line" data-line="5"><span>        └── SKILL.md</span></span>
+<span class="line" data-line="6"><span></span></span>
+<span class="line" data-line="7"><span># 项目级 Skill：只对当前项目生效，适合团队共享</span></span>
+<span class="line" data-line="8"><span>.claude/</span></span>
+<span class="line" data-line="9"><span>└── skills/</span></span>
+<span class="line" data-line="10"><span>    └── skill-name/</span></span>
+<span class="line" data-line="11"><span>        └── SKILL.md</span></span>
+<span class="line" data-line="12"><span></span></span>
+<span class="line" data-line="13"><span># 插件级 Skill：随插件安装而生效</span></span>
+<span class="line" data-line="14"><span>my-plugin/</span></span>
+<span class="line" data-line="15"><span>└── skills/</span></span>
+<span class="line" data-line="16"><span>    └── skill-name/</span></span>
+<span class="line" data-line="17"><span>        └── SKILL.md</span></span></code></pre></div>
+<p>如果是企业环境，还可能存在企业级托管配置。整体可以理解为四层：</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>层级</th><th>常见位置</th><th>适用场景</th></tr></thead><tbody><tr><td>企业级</td><td>Managed Settings</td><td>公司统一规范，全员生效</td></tr><tr><td>用户级</td><td><code>~/.claude/skills/</code></td><td>个人常用 Skill，比如 commit message、代码审查</td></tr><tr><td>项目级</td><td><code>.claude/skills/</code></td><td>项目专属规范，比如 API 风格、部署流程、数据库约定</td></tr><tr><td>插件级</td><td><code>&#x3C;plugin>/skills/</code></td><td>随插件安装的一组 Skill</td></tr></tbody></table></div>
+<p>需要注意的是，<strong>同名 Skill 出现在多个层级时会有优先级问题</strong>。实践中可以按这个原则理解：越靠近组织治理和个人配置的 Skill 越容易覆盖通用 Skill；而项目级 Skill 更适合沉淀仓库内的团队规范。</p>
+<p>对于 Monorepo，也可以在子项目中放置嵌套的 <code>.claude/skills/</code>，让不同模块使用不同规范：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>monorepo/</span></span>
+<span class="line" data-line="2"><span>├── frontend/</span></span>
+<span class="line" data-line="3"><span>│   └── .claude/</span></span>
+<span class="line" data-line="4"><span>│       └── skills/</span></span>
+<span class="line" data-line="5"><span>│           └── react-style/</span></span>
+<span class="line" data-line="6"><span>│               └── SKILL.md</span></span>
+<span class="line" data-line="7"><span>├── backend/</span></span>
+<span class="line" data-line="8"><span>│   └── .claude/</span></span>
+<span class="line" data-line="9"><span>│       └── skills/</span></span>
+<span class="line" data-line="10"><span>│           └── api-style/</span></span>
+<span class="line" data-line="11"><span>│               └── SKILL.md</span></span>
+<span class="line" data-line="12"><span>└── .claude/</span></span>
+<span class="line" data-line="13"><span>    └── skills/</span></span>
+<span class="line" data-line="14"><span>        └── project-overview/</span></span>
+<span class="line" data-line="15"><span>            └── SKILL.md</span></span></code></pre></div>
+<p>一个完整的 Skill 目录通常长这样：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>.claude/</span></span>
+<span class="line" data-line="2"><span>└── skills/</span></span>
+<span class="line" data-line="3"><span>    └── sql-review/</span></span>
+<span class="line" data-line="4"><span>        ├── SKILL.md              # 必需：Skill 入口文件</span></span>
+<span class="line" data-line="5"><span>        ├── references/           # 可选：详细参考资料</span></span>
+<span class="line" data-line="6"><span>        │   ├── schema.md</span></span>
+<span class="line" data-line="7"><span>        │   └── query-style.md</span></span>
+<span class="line" data-line="8"><span>        ├── scripts/              # 可选：可执行脚本</span></span>
+<span class="line" data-line="9"><span>        │   └── check_sql.py</span></span>
+<span class="line" data-line="10"><span>        ├── examples/             # 可选：正反示例</span></span>
+<span class="line" data-line="11"><span>        │   ├── good.sql</span></span>
+<span class="line" data-line="12"><span>        │   └── bad.sql</span></span>
+<span class="line" data-line="13"><span>        └── assets/               # 可选：图片、模板、静态资源</span></span>
+<span class="line" data-line="14"><span>            └── er-diagram.png</span></span></code></pre></div>
+<p>其中只有 <code>SKILL.md</code> 是必需的，其余目录按需添加。</p>
+<h2 id="三skillmd-文件结构"><a href="#三skillmd-文件结构">三、<code>SKILL.md</code> 文件结构</a><a href="#三skillmd-文件结构" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="三skillmd-文件结构"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<h3 id="31-最小可用结构"><a href="#31-最小可用结构">3.1 最小可用结构</a><a href="#31-最小可用结构" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="31-最小可用结构"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>一个最简单的 Claude Code Skill 只需要一个 <code>SKILL.md</code>：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="markdown"><code><span class="line" data-line="1"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="2"><span style="color:#22863A;--shiki-dark:#85E89D">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">code-review</span></span>
+<span class="line" data-line="3"><span style="color:#22863A;--shiki-dark:#85E89D">description</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Use this skill when reviewing code changes, checking bugs, maintainability, security issues, and test coverage.</span></span>
+<span class="line" data-line="4"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="5"></span>
+<span class="line" data-line="6"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold"># Code Review Skill</span></span>
+<span class="line" data-line="7"></span>
+<span class="line" data-line="8"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Review Principles</span></span>
+<span class="line" data-line="9"></span>
+<span class="line" data-line="10"><span style="color:#24292E;--shiki-dark:#E1E4E8">When reviewing code, focus on the following areas:</span></span>
+<span class="line" data-line="11"></span>
+<span class="line" data-line="12"><span style="color:#E36209;--shiki-dark:#FFAB70">1.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Correctness</span></span>
+<span class="line" data-line="13"><span style="color:#E36209;--shiki-dark:#FFAB70">2.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Security</span></span>
+<span class="line" data-line="14"><span style="color:#E36209;--shiki-dark:#FFAB70">3.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Maintainability</span></span>
+<span class="line" data-line="15"><span style="color:#E36209;--shiki-dark:#FFAB70">4.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Performance</span></span>
+<span class="line" data-line="16"><span style="color:#E36209;--shiki-dark:#FFAB70">5.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Test coverage</span></span>
+<span class="line" data-line="17"></span>
+<span class="line" data-line="18"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Output Format</span></span>
+<span class="line" data-line="19"></span>
+<span class="line" data-line="20"><span style="color:#24292E;--shiki-dark:#E1E4E8">Use this structure:</span></span>
+<span class="line" data-line="21"></span>
+<span class="line" data-line="22"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Summary</span></span>
+<span class="line" data-line="23"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Major Issues</span></span>
+<span class="line" data-line="24"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Minor Suggestions</span></span>
+<span class="line" data-line="25"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Suggested Fixes</span></span></code></pre></div>
+<p>这个文件分为两部分：</p>
+<ol>
+<li><strong>YAML Frontmatter</strong>：<code>name</code>、<code>description</code> 等元数据；</li>
+<li><strong>Markdown Body</strong>：真正的工作规范和执行流程。</li>
+</ol>
+<p>其中最重要的是 <code>description</code>。</p>
+<p>Claude Code 会根据 description 判断：当前任务是否应该使用这个 Skill。</p>
+<h3 id="32-name-与-description"><a href="#32-name-与-description">3.2 <code>name</code> 与 <code>description</code></a><a href="#32-name-与-description" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="32-name-与-description"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p><code>name</code> 是 Skill 的名称，通常使用短横线命名：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line" data-line="1"><span style="color:#22863A;--shiki-dark:#85E89D">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">code-review</span></span></code></pre></div>
+<p><code>description</code> 决定 Skill 何时被自动触发，应该写得具体、明确、可匹配任务场景。它是自动匹配的关键字段，建议把最重要的触发关键词放在前面，因为实际用于匹配的描述内容存在长度限制：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line" data-line="1"><span style="color:#22863A;--shiki-dark:#85E89D">description</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Use this skill when the user asks to review code, inspect a pull request, find bugs, check maintainability, or evaluate security and test coverage.</span></span></code></pre></div>
+<p>如果场景比较复杂，可以增加 <code>when_to_use</code>，把触发条件写得更具体：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line" data-line="1"><span style="color:#22863A;--shiki-dark:#85E89D">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">commit-msg</span></span>
+<span class="line" data-line="2"><span style="color:#22863A;--shiki-dark:#85E89D">description</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Generate a conventional Git commit message for staged or unstaged code changes.</span></span>
+<span class="line" data-line="3"><span style="color:#22863A;--shiki-dark:#85E89D">when_to_use</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#D73A49;--shiki-dark:#F97583">|</span></span>
+<span class="line" data-line="4"><span style="color:#032F62;--shiki-dark:#9ECBFF">    - 用户要求生成 commit message、提交信息、git commit 文案</span></span>
+<span class="line" data-line="5"><span style="color:#032F62;--shiki-dark:#9ECBFF">    - 用户准备提交代码，需要总结当前 diff</span></span>
+<span class="line" data-line="6"><span style="color:#032F62;--shiki-dark:#9ECBFF">    - 用户要求遵循 Conventional Commits 规范</span></span></code></pre></div>
+<p><code>description</code> 不要写成“帮助写代码”这种泛泛描述，否则很难精准触发。更好的写法是直接说明任务、关键词和适用边界。</p>
+<h3 id="33-skill-内容主体"><a href="#33-skill-内容主体">3.3 Skill 内容主体</a><a href="#33-skill-内容主体" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="33-skill-内容主体"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p><code>SKILL.md</code> 的正文应该像一份工程手册，而不是泛泛而谈的提示词。</p>
+<p>例如，一个后端 API Skill 可以这样写：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="markdown"><code><span class="line" data-line="1"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="2"><span style="color:#22863A;--shiki-dark:#85E89D">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">backend-api-style</span></span>
+<span class="line" data-line="3"><span style="color:#22863A;--shiki-dark:#85E89D">description</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Use this skill when creating, modifying, or reviewing backend API endpoints in this project. Covers FastAPI, Pydantic models, error response format, and repository-layer conventions.</span></span>
+<span class="line" data-line="4"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="5"></span>
+<span class="line" data-line="6"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold"># Backend API Style</span></span>
+<span class="line" data-line="7"></span>
+<span class="line" data-line="8"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Tech Stack</span></span>
+<span class="line" data-line="9"></span>
+<span class="line" data-line="10"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Python 3.11+</span></span>
+<span class="line" data-line="11"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> FastAPI</span></span>
+<span class="line" data-line="12"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Pydantic v2</span></span>
+<span class="line" data-line="13"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> SQLAlchemy 2.0 async mode</span></span>
+<span class="line" data-line="14"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> PostgreSQL</span></span>
+<span class="line" data-line="15"></span>
+<span class="line" data-line="16"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## API Response Format</span></span>
+<span class="line" data-line="17"></span>
+<span class="line" data-line="18"><span style="color:#24292E;--shiki-dark:#E1E4E8">All successful responses must use this structure:</span></span>
+<span class="line" data-line="19"></span>
+<span class="line" data-line="20"><span style="color:#24292E;--shiki-dark:#E1E4E8">```json</span></span>
+<span class="line" data-line="21"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line" data-line="22"><span style="color:#24292E;--shiki-dark:#E1E4E8">	"code": 0,</span></span>
+<span class="line" data-line="23"><span style="color:#24292E;--shiki-dark:#E1E4E8">	"message": "success",</span></span>
+<span class="line" data-line="24"><span style="color:#24292E;--shiki-dark:#E1E4E8">	"data": {}</span></span>
+<span class="line" data-line="25"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line" data-line="26"><span style="color:#24292E;--shiki-dark:#E1E4E8">```</span></span>
+<span class="line" data-line="27"></span>
+<span class="line" data-line="28"><span style="color:#24292E;--shiki-dark:#E1E4E8">For errors:</span></span>
+<span class="line" data-line="29"></span>
+<span class="line" data-line="30"><span style="color:#24292E;--shiki-dark:#E1E4E8">```json</span></span>
+<span class="line" data-line="31"><span style="color:#24292E;--shiki-dark:#E1E4E8">{</span></span>
+<span class="line" data-line="32"><span style="color:#24292E;--shiki-dark:#E1E4E8">	"code": 1001,</span></span>
+<span class="line" data-line="33"><span style="color:#24292E;--shiki-dark:#E1E4E8">	"message": "user not found",</span></span>
+<span class="line" data-line="34"><span style="color:#24292E;--shiki-dark:#E1E4E8">	"data": null</span></span>
+<span class="line" data-line="35"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line" data-line="36"><span style="color:#24292E;--shiki-dark:#E1E4E8">```</span></span>
+<span class="line" data-line="37"></span>
+<span class="line" data-line="38"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Repository Rules</span></span>
+<span class="line" data-line="39"></span>
+<span class="line" data-line="40"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Do not write SQL directly inside route handlers.</span></span>
+<span class="line" data-line="41"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Use Repository classes for database access.</span></span>
+<span class="line" data-line="42"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Use </span><span style="color:#005CC5;--shiki-dark:#79B8FF">`async with session`</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> for database operations.</span></span>
+<span class="line" data-line="43"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Avoid committing inside loops.</span></span>
+<span class="line" data-line="44"></span>
+<span class="line" data-line="45"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Validation Rules</span></span>
+<span class="line" data-line="46"></span>
+<span class="line" data-line="47"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> All request bodies must use Pydantic models.</span></span>
+<span class="line" data-line="48"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Do not trust raw user input.</span></span>
+<span class="line" data-line="49"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Do not concatenate SQL strings manually.</span></span>
+<span class="line" data-line="50"></span>
+<span class="line" data-line="51"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Before Finishing</span></span>
+<span class="line" data-line="52"></span>
+<span class="line" data-line="53"><span style="color:#24292E;--shiki-dark:#E1E4E8">Check:</span></span>
+<span class="line" data-line="54"></span>
+<span class="line" data-line="55"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Whether the response format is correct.</span></span>
+<span class="line" data-line="56"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Whether input validation is complete.</span></span>
+<span class="line" data-line="57"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Whether database access is isolated in the Repository layer.</span></span>
+<span class="line" data-line="58"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Whether errors use the project error code convention.</span></span></code></pre></div>
+<p>这类 Skill 的价值在于：以后你让 Claude Code 写接口、改接口、审查接口，它就能自动带上这套项目规范。</p>
+<h3 id="34-frontmatter-常用字段"><a href="#34-frontmatter-常用字段">3.4 Frontmatter 常用字段</a><a href="#34-frontmatter-常用字段" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="34-frontmatter-常用字段"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<blockquote>
+<p>claude code 官方参考文档：<a href="https://code.claude.com/docs/zh-CN/skills" target="_blank" rel="noopener">https://code.claude.com/docs/zh-CN/skills</a></p>
+</blockquote>
+<p>除了 <code>name</code> 和 <code>description</code>，Skill 还可以通过 Frontmatter 控制触发方式、工具权限和运行策略。下面这些字段比较常用：</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>字段</th><th>作用</th><th>典型用法</th></tr></thead><tbody><tr><td><code>name</code></td><td>Skill 名称，用于识别和手动触发</td><td><code>name: code-review</code></td></tr><tr><td><code>description</code></td><td>自动触发匹配依据</td><td>描述任务场景和关键词</td></tr><tr><td><code>when_to_use</code></td><td>补充触发条件</td><td>写具体用户话术和适用边界</td></tr><tr><td><code>allowed-tools</code></td><td>指定 Skill 可直接使用的工具</td><td>部署检查、文件读取、脚本执行</td></tr><tr><td><code>disable-model-invocation</code></td><td>禁止自动触发，只允许手动调用</td><td>生产部署、数据库迁移、发送邮件</td></tr><tr><td><code>user-invocable</code></td><td>是否允许用户从 <code>/</code> 菜单手动调用</td><td>背景知识型 Skill 可设为 <code>false</code></td></tr><tr><td><code>paths</code></td><td>只在匹配特定文件路径时触发</td><td>API 文档、路由文件、迁移脚本</td></tr><tr><td><code>effort</code></td><td>指定思考力度</td><td>复杂审查可设为 <code>high</code></td></tr><tr><td><code>context</code> / <code>agent</code></td><td>在独立子代理中运行</td><td>大型任务、隔离上下文</td></tr></tbody></table></div>
+<p>例如，一个只希望手动触发的生产部署 Skill 可以这样写：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line" data-line="1"><span style="color:#6F42C1;--shiki-dark:#B392F0">---</span></span>
+<span class="line" data-line="2"><span style="color:#22863A;--shiki-dark:#85E89D">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">deploy-to-production</span></span>
+<span class="line" data-line="3"><span style="color:#22863A;--shiki-dark:#85E89D">description</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Deploy the application to production. Use only when the user explicitly requests production deployment.</span></span>
+<span class="line" data-line="4"><span style="color:#22863A;--shiki-dark:#85E89D">disable-model-invocation</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line" data-line="5"><span style="color:#22863A;--shiki-dark:#85E89D">allowed-tools</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Bash"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"Read"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line" data-line="6"><span style="color:#22863A;--shiki-dark:#85E89D">effort</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">high</span></span>
+<span class="line" data-line="7"><span style="color:#6F42C1;--shiki-dark:#B392F0">---</span></span></code></pre></div>
+<p>这样做的意义是：部署、删库、发邮件、提交到主分支这类有副作用的操作，不应该被模型因为语义匹配而自动触发，必须由用户明确调用。</p>
+<h2 id="四渐进式加载"><a href="#四渐进式加载">四、渐进式加载</a><a href="#四渐进式加载" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="四渐进式加载"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>Skill 不是一股脑全部塞进上下文。</p>
+<p>Claude Code 的设计更接近“<strong>渐进式加载</strong>”：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>启动 Claude Code</span></span>
+<span class="line" data-line="2"><span>│</span></span>
+<span class="line" data-line="3"><span>▼</span></span>
+<span class="line" data-line="4"><span>扫描可用 Skill</span></span>
+<span class="line" data-line="5"><span>│</span></span>
+<span class="line" data-line="6"><span>├── 读取 Skill 名称</span></span>
+<span class="line" data-line="7"><span>├── 读取 Skill description</span></span>
+<span class="line" data-line="8"><span>└── 不立即读取完整正文和资源文件</span></span>
+<span class="line" data-line="9"><span>│</span></span>
+<span class="line" data-line="10"><span>▼</span></span>
+<span class="line" data-line="11"><span>用户提出任务</span></span>
+<span class="line" data-line="12"><span>│</span></span>
+<span class="line" data-line="13"><span>▼</span></span>
+<span class="line" data-line="14"><span>Claude Code 判断任务是否匹配某个 Skill</span></span>
+<span class="line" data-line="15"><span>│</span></span>
+<span class="line" data-line="16"><span>▼</span></span>
+<span class="line" data-line="17"><span>匹配成功后加载对应 SKILL.md</span></span>
+<span class="line" data-line="18"><span>│</span></span>
+<span class="line" data-line="19"><span>▼</span></span>
+<span class="line" data-line="20"><span>如有必要，再读取 references/、examples/、scripts/ 等辅助文件</span></span>
+<span class="line" data-line="21"><span>│</span></span>
+<span class="line" data-line="22"><span>▼</span></span>
+<span class="line" data-line="23"><span>按照 Skill 规范执行任务</span></span></code></pre></div>
+<p>这个机制的核心好处是：</p>
+<ul>
+<li>平时只加载 Skill 的简短描述，节省上下文；</li>
+<li>真正需要时才加载完整规范；</li>
+<li>大型参考资料可以放到 <code>references/</code>，需要时再读取；</li>
+<li>固定流程可以放到 <code>scripts/</code>，避免模型每次重复生成脚本。</li>
+</ul>
+<p>所以写 Skill 时，不要把几万字规范都塞进 <code>SKILL.md</code>。</p>
+<p><code>SKILL.md</code> 应该像目录和任务手册，而不是完整知识库。</p>
+<p>更好的方式是：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>SKILL.md               # 放核心原则、触发场景、执行流程</span></span>
+<span class="line" data-line="2"><span>references/*.md        # 放详细规范、背景知识、长文档</span></span>
+<span class="line" data-line="3"><span>examples/*             # 放正反示例</span></span>
+<span class="line" data-line="4"><span>scripts/*              # 放可执行、可复用、确定性的脚本</span></span></code></pre></div>
+<h2 id="五安装触发与管理"><a href="#五安装触发与管理">五、安装、触发与管理</a><a href="#五安装触发与管理" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="五安装触发与管理"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<h3 id="51-安装别人的-skill"><a href="#51-安装别人的-skill">5.1 安装别人的 Skill</a><a href="#51-安装别人的-skill" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="51-安装别人的-skill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>安装 Skill 最简单的方式是复制整个目录，而不是只复制 <code>SKILL.md</code>：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line" data-line="1"><span style="color:#6A737D;--shiki-dark:#6A737D"># 安装到用户级，所有项目可用</span></span>
+<span class="line" data-line="2"><span style="color:#6F42C1;--shiki-dark:#B392F0">mkdir</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ~/.claude/skills</span></span>
+<span class="line" data-line="3"><span style="color:#6F42C1;--shiki-dark:#B392F0">cp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -r</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> skill-name</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> ~/.claude/skills/</span></span>
+<span class="line" data-line="4"></span>
+<span class="line" data-line="5"><span style="color:#6A737D;--shiki-dark:#6A737D"># 安装到项目级，只在当前项目可用</span></span>
+<span class="line" data-line="6"><span style="color:#6F42C1;--shiki-dark:#B392F0">mkdir</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> .claude/skills</span></span>
+<span class="line" data-line="7"><span style="color:#6F42C1;--shiki-dark:#B392F0">cp</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -r</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> skill-name</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> .claude/skills/</span></span></code></pre></div>
+<p>目录结构必须是：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>~/.claude/skills/my-skill/SKILL.md</span></span></code></pre></div>
+<p>而不是：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>~/.claude/skills/SKILL.md</span></span></code></pre></div>
+<p>如果 Skill 来自插件市场，也可以通过 Claude Code 的插件命令安装。例如先添加市场，再安装插件：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>/plugin marketplace add anthropics/skills</span></span>
+<span class="line" data-line="2"><span>/plugin install document-skills@anthropic-agent-skills</span></span></code></pre></div>
+<p>这类插件通常不是只包含一个 Skill，而是一组 Skill、命令、hooks 或 MCP 配置的集合。</p>
+<h3 id="52-创建自己的-skill"><a href="#52-创建自己的-skill">5.2 创建自己的 Skill</a><a href="#52-创建自己的-skill" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="52-创建自己的-skill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>自己写 Skill 不需要复杂编程能力。最低成本的做法是创建目录和 <code>SKILL.md</code>：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line" data-line="1"><span style="color:#6F42C1;--shiki-dark:#B392F0">mkdir</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -p</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> .claude/skills/commit-msg</span></span>
+<span class="line" data-line="2"><span style="color:#6F42C1;--shiki-dark:#B392F0">vim</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> .claude/skills/commit-msg/SKILL.md</span></span></code></pre></div>
+<p>然后写入：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="markdown"><code><span class="line" data-line="1"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="2"><span style="color:#22863A;--shiki-dark:#85E89D">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">commit-msg</span></span>
+<span class="line" data-line="3"><span style="color:#22863A;--shiki-dark:#85E89D">description</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Generate a conventional Git commit message when the user asks for commit message, git commit text, or code change summary.</span></span>
+<span class="line" data-line="4"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="5"></span>
+<span class="line" data-line="6"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold"># Commit Message Skill</span></span>
+<span class="line" data-line="7"></span>
+<span class="line" data-line="8"><span style="color:#24292E;--shiki-dark:#E1E4E8">根据当前代码变更生成提交信息。</span></span>
+<span class="line" data-line="9"></span>
+<span class="line" data-line="10"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Format</span></span>
+<span class="line" data-line="11"></span>
+<span class="line" data-line="12"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 使用 Conventional Commits 风格</span></span>
+<span class="line" data-line="13"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 第一行不超过 50 个字符</span></span>
+<span class="line" data-line="14"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 如果变更较多，在正文中补充 2-3 条说明</span></span>
+<span class="line" data-line="15"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> 优先使用中文描述</span></span>
+<span class="line" data-line="16"></span>
+<span class="line" data-line="17"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Types</span></span>
+<span class="line" data-line="18"></span>
+<span class="line" data-line="19"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `feat`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: 新功能</span></span>
+<span class="line" data-line="20"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `fix`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: Bug 修复</span></span>
+<span class="line" data-line="21"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `docs`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: 文档更新</span></span>
+<span class="line" data-line="22"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `refactor`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: 重构</span></span>
+<span class="line" data-line="23"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `test`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: 测试相关</span></span>
+<span class="line" data-line="24"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `chore`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: 构建、依赖、工具链</span></span></code></pre></div>
+<p>也可以直接让 Claude Code 帮你生成：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>帮我创建一个用于生成 REST API 文档的 Skill，要求包含接口说明、参数表、返回值示例、错误码说明，并保存到 .claude/skills/api-doc/SKILL.md</span></span></code></pre></div>
+<p>相比“帮我写一个文档 Skill”，这种描述更容易生成高质量结果，因为它明确了用途、输出结构和保存位置。</p>
+<h3 id="53-自动触发与手动触发"><a href="#53-自动触发与手动触发">5.3 自动触发与手动触发</a><a href="#53-自动触发与手动触发" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="53-自动触发与手动触发"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>Skill 有两种主要调用方式。</p>
+<p>自动触发依赖 <code>description</code> 和 <code>when_to_use</code>。当你说“帮我 review 这段代码”时，Claude Code 会从已安装 Skill 的描述中判断是否应该加载 <code>code-review</code>。</p>
+<p>手动触发则使用斜杠命令：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>/commit-msg</span></span>
+<span class="line" data-line="2"><span>/code-review</span></span>
+<span class="line" data-line="3"><span>/fix-issue 123</span></span></code></pre></div>
+<p>如果不知道当前有哪些 Skill，可以使用：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>/skills</span></span></code></pre></div>
+<p>或者输入 <code>/</code> 打开命令面板进行筛选。</p>
+<h3 id="54-控制触发行为"><a href="#54-控制触发行为">5.4 控制触发行为</a><a href="#54-控制触发行为" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="54-控制触发行为"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>有些 Skill 适合自动触发，比如代码风格、文档规范、测试规范；有些 Skill 则不适合自动触发，比如生产部署、数据库迁移、批量删除文件。</p>
+<p>可以用下面两个字段控制：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="yaml"><code><span class="line" data-line="1"><span style="color:#22863A;--shiki-dark:#85E89D">disable-model-invocation</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span></span>
+<span class="line" data-line="2"><span style="color:#22863A;--shiki-dark:#85E89D">user-invocable</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">false</span></span></code></pre></div>
+<p>常见组合如下：</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>配置</th><th>用户可手动触发</th><th>Claude 可自动触发</th><th>适用场景</th></tr></thead><tbody><tr><td>默认</td><td>是</td><td>是</td><td>普通 Skill</td></tr><tr><td><code>disable-model-invocation: true</code></td><td>是</td><td>否</td><td>有副作用操作，只允许手动调用</td></tr><tr><td><code>user-invocable: false</code></td><td>否</td><td>是</td><td>背景知识型 Skill，不需要用户手动点选</td></tr><tr><td>两者都设置</td><td>否</td><td>否</td><td>临时禁用或废弃 Skill</td></tr></tbody></table></div>
+<h3 id="55-管理和排查"><a href="#55-管理和排查">5.5 管理和排查</a><a href="#55-管理和排查" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="55-管理和排查"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>常用管理命令：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>/skills     # 查看已安装 Skill</span></span>
+<span class="line" data-line="2"><span>/plugin     # 管理插件</span></span>
+<span class="line" data-line="3"><span>/cost       # 查看当前会话 token 消耗</span></span>
+<span class="line" data-line="4"><span>/clear      # 清理当前上下文</span></span></code></pre></div>
+<p>如果 Skill 没有触发，优先检查：</p>
+<ul>
+<li><code>SKILL.md</code> 是否放在正确目录；</li>
+<li><code>description</code> 是否太泛；</li>
+<li>是否需要补充 <code>when_to_use</code>；</li>
+<li>是否误设置了 <code>disable-model-invocation: true</code>；</li>
+<li>是否安装了多个同名 Skill，导致实际生效的不是你以为的版本。</li>
+</ul>
+<h2 id="六核心文件与目录详解"><a href="#六核心文件与目录详解">六、核心文件与目录详解</a><a href="#六核心文件与目录详解" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="六核心文件与目录详解"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<h3 id="61-skillmd技能入口"><a href="#61-skillmd技能入口">6.1 <code>SKILL.md</code>：技能入口</a><a href="#61-skillmd技能入口" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="61-skillmd技能入口"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p><code>SKILL.md</code> 是整个 Skill 的入口，也是 Claude Code 首先读取的文件。</p>
+<p>它应该回答三个问题：</p>
+<ol>
+<li>这个 Skill 什么时候使用？</li>
+<li>使用时应该遵循什么流程？</li>
+<li>需要进一步信息时，该读哪些文件或运行哪些脚本？</li>
+</ol>
+<p>例如：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="markdown"><code><span class="line" data-line="1"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="2"><span style="color:#22863A;--shiki-dark:#85E89D">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">data-analysis</span></span>
+<span class="line" data-line="3"><span style="color:#22863A;--shiki-dark:#85E89D">description</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Use this skill when analyzing datasets, performing EDA, cleaning data, building baseline models, or summarizing findings from notebooks and CSV files.</span></span>
+<span class="line" data-line="4"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="5"></span>
+<span class="line" data-line="6"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold"># Data Analysis Skill</span></span>
+<span class="line" data-line="7"></span>
+<span class="line" data-line="8"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Workflow</span></span>
+<span class="line" data-line="9"></span>
+<span class="line" data-line="10"><span style="color:#E36209;--shiki-dark:#FFAB70">1.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Understand the dataset and task goal.</span></span>
+<span class="line" data-line="11"><span style="color:#E36209;--shiki-dark:#FFAB70">2.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Inspect shape, columns, missing values, and data types.</span></span>
+<span class="line" data-line="12"><span style="color:#E36209;--shiki-dark:#FFAB70">3.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Identify target variable and feature columns.</span></span>
+<span class="line" data-line="13"><span style="color:#E36209;--shiki-dark:#FFAB70">4.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Perform exploratory analysis.</span></span>
+<span class="line" data-line="14"><span style="color:#E36209;--shiki-dark:#FFAB70">5.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Build a simple baseline before complex models.</span></span>
+<span class="line" data-line="15"><span style="color:#E36209;--shiki-dark:#FFAB70">6.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Summarize findings clearly.</span></span>
+<span class="line" data-line="16"></span>
+<span class="line" data-line="17"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Reference Files</span></span>
+<span class="line" data-line="18"></span>
+<span class="line" data-line="19"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> For EDA checklist, read </span><span style="color:#005CC5;--shiki-dark:#79B8FF">`references/eda-checklist.md`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line" data-line="20"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> For visualization style, read </span><span style="color:#005CC5;--shiki-dark:#79B8FF">`references/visualization-style.md`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line" data-line="21"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> For reusable scripts, check </span><span style="color:#005CC5;--shiki-dark:#79B8FF">`scripts/`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span></code></pre></div>
+<h3 id="62-references详细知识库"><a href="#62-references详细知识库">6.2 <code>references/</code>：详细知识库</a><a href="#62-references详细知识库" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="62-references详细知识库"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p><code>references/</code> 适合放长文档。</p>
+<p>比如：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>references/</span></span>
+<span class="line" data-line="2"><span>├── api-error-codes.md</span></span>
+<span class="line" data-line="3"><span>├── database-schema.md</span></span>
+<span class="line" data-line="4"><span>├── architecture.md</span></span>
+<span class="line" data-line="5"><span>└── test-guidelines.md</span></span></code></pre></div>
+<p><code>SKILL.md</code> 中只需要写清楚什么时候读取它们：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="markdown"><code><span class="line" data-line="1"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Additional References</span></span>
+<span class="line" data-line="2"></span>
+<span class="line" data-line="3"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> When modifying API error handling, read </span><span style="color:#005CC5;--shiki-dark:#79B8FF">`references/api-error-codes.md`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line" data-line="4"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> When changing database queries, read </span><span style="color:#005CC5;--shiki-dark:#79B8FF">`references/database-schema.md`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span>
+<span class="line" data-line="5"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> When writing tests, read </span><span style="color:#005CC5;--shiki-dark:#79B8FF">`references/test-guidelines.md`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">.</span></span></code></pre></div>
+<p>这样可以避免 <code>SKILL.md</code> 过长。</p>
+<h3 id="63-examples正反示例"><a href="#63-examples正反示例">6.3 <code>examples/</code>：正反示例</a><a href="#63-examples正反示例" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="63-examples正反示例"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>模型通常非常依赖示例。</p>
+<p>如果只写“代码要清晰”，效果很一般；如果给出好代码和坏代码，效果会明显更好。</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>examples/</span></span>
+<span class="line" data-line="2"><span>├── good_repository.py</span></span>
+<span class="line" data-line="3"><span>├── bad_repository.py</span></span>
+<span class="line" data-line="4"><span>├── good_test.py</span></span>
+<span class="line" data-line="5"><span>└── bad_test.py</span></span></code></pre></div>
+<p>在 <code>SKILL.md</code> 中可以这样引用：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="markdown"><code><span class="line" data-line="1"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Examples</span></span>
+<span class="line" data-line="2"></span>
+<span class="line" data-line="3"><span style="color:#24292E;--shiki-dark:#E1E4E8">Before implementing repository-layer changes, compare against:</span></span>
+<span class="line" data-line="4"></span>
+<span class="line" data-line="5"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `examples/good_repository.py`</span></span>
+<span class="line" data-line="6"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `examples/bad_repository.py`</span></span></code></pre></div>
+<h3 id="64-scripts确定性工具"><a href="#64-scripts确定性工具">6.4 <code>scripts/</code>：确定性工具</a><a href="#64-scripts确定性工具" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="64-scripts确定性工具"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>有些事情不适合靠模型“猜”，更适合写成脚本。</p>
+<p>例如：</p>
+<ul>
+<li>检查 SQL 是否有危险语句；</li>
+<li>统计测试覆盖率；</li>
+<li>校验 Markdown frontmatter；</li>
+<li>生成固定格式的报告；</li>
+<li>检查某些命名规范。</li>
+</ul>
+<p>目录示例：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>scripts/</span></span>
+<span class="line" data-line="2"><span>├── validate_frontmatter.py</span></span>
+<span class="line" data-line="3"><span>├── check_sql.py</span></span>
+<span class="line" data-line="4"><span>└── generate_report.py</span></span></code></pre></div>
+<p><code>SKILL.md</code> 可以告诉 Claude Code：在需要确定性校验时运行脚本，而不是自己凭感觉判断。</p>
+<h2 id="七实战案例代码审查-skill"><a href="#七实战案例代码审查-skill">七、实战案例：代码审查 Skill</a><a href="#七实战案例代码审查-skill" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="七实战案例代码审查-skill"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>假设我们要为项目创建一个代码审查 Skill。</p>
+<p>目录结构：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>.claude/</span></span>
+<span class="line" data-line="2"><span>└── skills/</span></span>
+<span class="line" data-line="3"><span>    └── code-review/</span></span>
+<span class="line" data-line="4"><span>        ├── SKILL.md</span></span>
+<span class="line" data-line="5"><span>        ├── references/</span></span>
+<span class="line" data-line="6"><span>        │   └── review-checklist.md</span></span>
+<span class="line" data-line="7"><span>        └── examples/</span></span>
+<span class="line" data-line="8"><span>            ├── good-review.md</span></span>
+<span class="line" data-line="9"><span>            └── bad-review.md</span></span></code></pre></div>
+<p><code>SKILL.md</code> 可以这样写：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="markdown"><code><span class="line" data-line="1"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="2"><span style="color:#22863A;--shiki-dark:#85E89D">name</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">code-review</span></span>
+<span class="line" data-line="3"><span style="color:#22863A;--shiki-dark:#85E89D">description</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">Use this skill when reviewing code changes, pull requests, diffs, or modified files. Focus on correctness, maintainability, security, performance, and test coverage.</span></span>
+<span class="line" data-line="4"><span style="color:#24292E;--shiki-dark:#E1E4E8">---</span></span>
+<span class="line" data-line="5"></span>
+<span class="line" data-line="6"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold"># Code Review Skill</span></span>
+<span class="line" data-line="7"></span>
+<span class="line" data-line="8"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Review Goal</span></span>
+<span class="line" data-line="9"></span>
+<span class="line" data-line="10"><span style="color:#24292E;--shiki-dark:#E1E4E8">Review the code as a senior engineer. Prioritize issues that affect correctness, security, maintainability, performance, and test reliability.</span></span>
+<span class="line" data-line="11"></span>
+<span class="line" data-line="12"><span style="color:#24292E;--shiki-dark:#E1E4E8">Do not only summarize the code. Find concrete problems and propose actionable fixes.</span></span>
+<span class="line" data-line="13"></span>
+<span class="line" data-line="14"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Review Process</span></span>
+<span class="line" data-line="15"></span>
+<span class="line" data-line="16"><span style="color:#E36209;--shiki-dark:#FFAB70">1.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Understand the intent of the change.</span></span>
+<span class="line" data-line="17"><span style="color:#E36209;--shiki-dark:#FFAB70">2.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Inspect the changed files and related context.</span></span>
+<span class="line" data-line="18"><span style="color:#E36209;--shiki-dark:#FFAB70">3.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Identify correctness issues first.</span></span>
+<span class="line" data-line="19"><span style="color:#E36209;--shiki-dark:#FFAB70">4.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Check security and input validation.</span></span>
+<span class="line" data-line="20"><span style="color:#E36209;--shiki-dark:#FFAB70">5.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Check maintainability and code structure.</span></span>
+<span class="line" data-line="21"><span style="color:#E36209;--shiki-dark:#FFAB70">6.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Check test coverage.</span></span>
+<span class="line" data-line="22"><span style="color:#E36209;--shiki-dark:#FFAB70">7.</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Provide concise, actionable feedback.</span></span>
+<span class="line" data-line="23"></span>
+<span class="line" data-line="24"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Severity Levels</span></span>
+<span class="line" data-line="25"></span>
+<span class="line" data-line="26"><span style="color:#24292E;--shiki-dark:#E1E4E8">Use these severity levels:</span></span>
+<span class="line" data-line="27"></span>
+<span class="line" data-line="28"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `blocker`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: must fix before merge</span></span>
+<span class="line" data-line="29"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `major`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: should fix before merge</span></span>
+<span class="line" data-line="30"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `minor`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: improvement suggestion</span></span>
+<span class="line" data-line="31"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `nit`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: style or readability issue</span></span>
+<span class="line" data-line="32"></span>
+<span class="line" data-line="33"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Output Format</span></span>
+<span class="line" data-line="34"></span>
+<span class="line" data-line="35"><span style="color:#24292E;--shiki-dark:#E1E4E8">```markdown</span></span>
+<span class="line" data-line="36"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Summary</span></span>
+<span class="line" data-line="37"></span>
+<span class="line" data-line="38"><span style="color:#24292E;--shiki-dark:#E1E4E8">Briefly describe what this change does.</span></span>
+<span class="line" data-line="39"></span>
+<span class="line" data-line="40"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Findings</span></span>
+<span class="line" data-line="41"></span>
+<span class="line" data-line="42"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">### 1. [</span><span style="color:#032F62;--shiki-light-text-decoration:underline;--shiki-dark:#DBEDFF;--shiki-dark-text-decoration:underline">major</span><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">] Problem title</span></span>
+<span class="line" data-line="43"></span>
+<span class="line" data-line="44"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Location: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">`path/to/file.py`</span></span>
+<span class="line" data-line="45"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Problem: explain the issue</span></span>
+<span class="line" data-line="46"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Impact: explain why it matters</span></span>
+<span class="line" data-line="47"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> Suggested fix: provide a concrete fix</span></span>
+<span class="line" data-line="48"></span>
+<span class="line" data-line="49"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Tests</span></span>
+<span class="line" data-line="50"></span>
+<span class="line" data-line="51"><span style="color:#24292E;--shiki-dark:#E1E4E8">Mention whether existing tests are enough and what additional tests are needed.</span></span>
+<span class="line" data-line="52"><span style="color:#24292E;--shiki-dark:#E1E4E8">```</span></span>
+<span class="line" data-line="53"></span>
+<span class="line" data-line="54"><span style="color:#005CC5;--shiki-light-font-weight:bold;--shiki-dark:#79B8FF;--shiki-dark-font-weight:bold">## Additional References</span></span>
+<span class="line" data-line="55"></span>
+<span class="line" data-line="56"><span style="color:#24292E;--shiki-dark:#E1E4E8">If the review involves project-specific conventions, read:</span></span>
+<span class="line" data-line="57"></span>
+<span class="line" data-line="58"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `references/review-checklist.md`</span></span>
+<span class="line" data-line="59"></span>
+<span class="line" data-line="60"><span style="color:#24292E;--shiki-dark:#E1E4E8">If examples are needed, compare against:</span></span>
+<span class="line" data-line="61"></span>
+<span class="line" data-line="62"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `examples/good-review.md`</span></span>
+<span class="line" data-line="63"><span style="color:#E36209;--shiki-dark:#FFAB70">-</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> `examples/bad-review.md`</span></span></code></pre></div>
+<p>这个 Skill 比单纯说“帮我 review 一下代码”稳定得多。因为它把评审维度、严重级别、输出格式都固定下来了。</p>
+<h2 id="八skill-与-mcp-的关系"><a href="#八skill-与-mcp-的关系">八、Skill 与 MCP 的关系</a><a href="#八skill-与-mcp-的关系" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="八skill-与-mcp-的关系"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>Skill 和 MCP 经常一起出现，但它们不是同一个层面的东西。</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>对比项</th><th>Skill</th><th>MCP</th></tr></thead><tbody><tr><td>核心作用</td><td>注入专业知识、流程、规范</td><td>接入外部工具和数据源</td></tr><tr><td>主要形态</td><td><code>SKILL.md</code> + 资源文件</td><td>MCP Server + Tools/Resources</td></tr><tr><td>解决问题</td><td>AI 应该怎么做</td><td>AI 能调用什么</td></tr><tr><td>典型例子</td><td>代码审查规范、SQL 优化流程、论文阅读流程</td><td>访问数据库、读 GitHub、查文件、调用浏览器</td></tr><tr><td>是否偏静态</td><td>偏静态</td><td>偏动态</td></tr></tbody></table></div>
+<p>可以这样理解：</p>
+<blockquote>
+<p>Skill 告诉 Claude Code：遇到这个任务时，应该按照什么专业流程做。<br>
+MCP 告诉 Claude Code：如果需要外部能力，可以调用哪些工具。<br>
+Plugin 则更像一个工具箱，可以把多个 Skill、hooks、agents、MCP servers 打包在一起分发。</p>
+</blockquote>
+<p>所以三者不是互斥关系：</p>
+<ul>
+<li><strong>Skill</strong> 是单个能力模块；</li>
+<li><strong>Plugin</strong> 是能力集合和分发容器；</li>
+<li><strong>MCP</strong> 是外部工具和数据连接协议。</li>
+</ul>
+<p>在实际项目里，一个 Plugin 可以包含多个 Skill；一个 Skill 可以规定流程，并在执行过程中调用 MCP 提供的工具。</p>
+<h2 id="九推荐-skill-体系"><a href="#九推荐-skill-体系">九、推荐 Skill 体系</a><a href="#九推荐-skill-体系" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="九推荐-skill-体系"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>对于一个中大型项目，可以这样组织：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>.claude/</span></span>
+<span class="line" data-line="2"><span>└── skills/</span></span>
+<span class="line" data-line="3"><span>    ├── project-overview/</span></span>
+<span class="line" data-line="4"><span>    │   ├── SKILL.md</span></span>
+<span class="line" data-line="5"><span>    │   └── references/</span></span>
+<span class="line" data-line="6"><span>    │       └── architecture.md</span></span>
+<span class="line" data-line="7"><span>    │</span></span>
+<span class="line" data-line="8"><span>    ├── code-review/</span></span>
+<span class="line" data-line="9"><span>    │   ├── SKILL.md</span></span>
+<span class="line" data-line="10"><span>    │   └── references/</span></span>
+<span class="line" data-line="11"><span>    │       └── review-checklist.md</span></span>
+<span class="line" data-line="12"><span>    │</span></span>
+<span class="line" data-line="13"><span>    ├── backend-api-style/</span></span>
+<span class="line" data-line="14"><span>    │   ├── SKILL.md</span></span>
+<span class="line" data-line="15"><span>    │   ├── references/</span></span>
+<span class="line" data-line="16"><span>    │   │   ├── error-codes.md</span></span>
+<span class="line" data-line="17"><span>    │   │   └── api-style.md</span></span>
+<span class="line" data-line="18"><span>    │   └── examples/</span></span>
+<span class="line" data-line="19"><span>    │       ├── good_api.py</span></span>
+<span class="line" data-line="20"><span>    │       └── bad_api.py</span></span>
+<span class="line" data-line="21"><span>    │</span></span>
+<span class="line" data-line="22"><span>    ├── database/</span></span>
+<span class="line" data-line="23"><span>    │   ├── SKILL.md</span></span>
+<span class="line" data-line="24"><span>    │   ├── references/</span></span>
+<span class="line" data-line="25"><span>    │   │   ├── schema.md</span></span>
+<span class="line" data-line="26"><span>    │   │   └── migration-rules.md</span></span>
+<span class="line" data-line="27"><span>    │   └── scripts/</span></span>
+<span class="line" data-line="28"><span>    │       └── check_migration.py</span></span>
+<span class="line" data-line="29"><span>    │</span></span>
+<span class="line" data-line="30"><span>    └── testing/</span></span>
+<span class="line" data-line="31"><span>        ├── SKILL.md</span></span>
+<span class="line" data-line="32"><span>        └── references/</span></span>
+<span class="line" data-line="33"><span>            └── test-style.md</span></span></code></pre></div>
+<p>每个 Skill 只负责一个专业领域，Claude Code 在需要时再加载对应能力。</p>
+<h2 id="十总结"><a href="#十总结">十、总结</a><a href="#十总结" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="十总结"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>Claude Code Skill 的核心价值，不是让模型“突然变聪明”，而是让模型在你的项目里变得更专业。</p>
+<p>它把原本散落在团队经验、代码审查意见、项目文档里的知识，整理成 Claude Code 可以自动使用的能力包。</p>
+<p>没有 Skill 时：</p>
+<ul>
+<li>每次都要重复说明项目规范；</li>
+<li>AI 输出风格不稳定；</li>
+<li>老经验很难复用；</li>
+<li>项目越复杂，沟通成本越高。</li>
+</ul>
+<p>有了 Skill 后：</p>
+<ul>
+<li>规范可以自动注入；</li>
+<li>专家经验可以沉淀；</li>
+<li>团队可以共享同一套 AI 工作方式；</li>
+<li>Claude Code 可以按项目标准完成任务。</li>
+<li>还可以通过手动触发、路径匹配和触发开关控制风险。</li>
+</ul>
+<p>如果只想记住几个工程实践原则，可以记这几条：</p>
+<ul>
+<li>通用习惯放用户级 Skill，项目规范放项目级 Skill；</li>
+<li><code>description</code> 决定自动触发质量，不要写得太泛；</li>
+<li>有副作用的 Skill 使用 <code>disable-model-invocation: true</code>；</li>
+<li>长文档放 <code>references/</code>，正反例放 <code>examples/</code>，确定性逻辑放 <code>scripts/</code>；</li>
+<li>定期用 <code>/skills</code> 和 <code>/cost</code> 检查安装情况与 token 消耗。</li>
+</ul>
+<blockquote>
+<p>MCP 让 AI 连接世界，Skill 让 AI 学会你的工作方法。</p>
+</blockquote>
+<blockquote>
+<p><strong>下一篇</strong>：<a href="./03-MCP%E4%B8%8ESkill%E7%9A%84%E5%AF%B9%E6%AF%94%EF%BC%9A%E4%BD%95%E6%97%B6%E7%94%A8%E5%93%AA%E4%B8%AA%EF%BC%8C%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88.md">03-MCP 与 Skill 的对比：何时用哪个，如何组合</a></p>
+</blockquote> </div> </div> <div data-reward-root class="reward-container relative"> <button class="reward-like-btn" data-reward-like data-article-id="4a54ecfb29064ed6" data-server-url="https://api.wqlblog.cn" aria-label="Like this post" title="Like"> <svg class="reward-like-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M7 10v12"></path> <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"></path> </svg> <span class="reward-like-count">—</span> </button> <p class="reward-line">
+如果这篇对你有帮助，可以
+<span class="reward-trigger inline-block" data-reward-open role="status" aria-expanded="false">请我喝杯咖啡</span> </p> <p class="reward-license">
+本文采用
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer license" class="no-underline">CC BY-NC-SA 4.0</a>
+协议，转载请注明出处
+</p> <div class="reward-popover invisible absolute left-0 right-0 mx-auto bottom-full mb-3 w-[500px] max-w-[90vw] pointer-events-none z-[9999]" data-reward-popover aria-hidden="true"> <div class="rounded-2xl p-4" style="border: 1px solid var(--theme-border); background: var(--theme-surface-elevated); box-shadow: var(--theme-shadow-md)"> <img src="/img/donate.png" alt="Donation QR code" class="mx-auto w-full h-auto rounded-lg"> <p class="text-center text-sm mt-2" style="color: var(--theme-muted)">Thank you for your support!</p> </div> </div> </div> <script type="module">function r(){document.querySelectorAll("[data-reward-root]").forEach(t=>{if(!(t instanceof HTMLElement)||t.dataset.rewardInitialized==="1")return;const a=t.querySelector("[data-reward-open]"),e=t.querySelector("[data-reward-popover]");if(a&&e instanceof HTMLElement){let n;const d=()=>{clearTimeout(n),e.classList.add("reward-popover-open"),e.setAttribute("aria-hidden","false"),a.setAttribute("aria-expanded","true")},o=()=>{n=setTimeout(()=>{e.classList.remove("reward-popover-open"),e.setAttribute("aria-hidden","true"),a.setAttribute("aria-expanded","false")},100)};a.addEventListener("mouseenter",d),e.addEventListener("mouseenter",d),a.addEventListener("mouseleave",o),e.addEventListener("mouseleave",o),t.dataset.rewardInitialized="1"}})}r();document.addEventListener("astro:page-load",r);document.addEventListener("astro:after-swap",r);</script> <!-- 上一篇 / 下一篇 --><nav class="article-post-nav"> <a href="/posts/03-MCP与Skill的对比：何时用哪个，如何组合/" class="post-nav-link post-nav-prev"> <span class="post-nav-label"> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+上一篇
+</span> <span class="post-nav-title">03-MCP与Skill的对比：何时用哪个，如何组合</span> </a> <a href="/posts/模拟股票交易对敲撮合系统/" class="post-nav-link post-nav-next"> <span class="post-nav-label">
+下一篇
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg> </span> <span class="post-nav-title">模拟股票交易对敲撮合系统</span> </a> </nav> <section class="related-posts-section"><h2 class="related-posts-title">延伸阅读</h2><div class="related-posts-list"><a class="related-post-row" href="/posts/%E9%A9%AF%E6%9C%8D_Claude_Code%EF%BC%9A%E4%B8%83%E7%A7%8D%E5%BC%95%E5%AF%BC%E5%AE%83%E8%A1%8C%E4%B8%BA%E7%9A%84%E6%96%B9%E5%BC%8F/"><span class="related-post-title">驯服 Claude Code：七种引导它行为的方式</span><span class="related-post-meta"><time datetime="2026-07-02T00:00:00.000Z"> Jul 2 </time></span></a><a class="related-post-row" href="/posts/03-MCP%E4%B8%8ESkill%E7%9A%84%E5%AF%B9%E6%AF%94%EF%BC%9A%E4%BD%95%E6%97%B6%E7%94%A8%E5%93%AA%E4%B8%AA%EF%BC%8C%E5%A6%82%E4%BD%95%E7%BB%84%E5%90%88/"><span class="related-post-title">03-MCP与Skill的对比：何时用哪个，如何组合</span><span class="related-post-meta"><time datetime="2026-03-21T00:00:00.000Z"> Mar 21 </time></span></a><a class="related-post-row" href="/posts/01-MCP%E6%B7%B1%E5%BA%A6%E8%A7%A3%E6%9E%90%EF%BC%9A%E8%AE%A9AI%E7%9C%9F%E6%AD%A3%E8%BF%9E%E6%8E%A5%E4%B8%96%E7%95%8C%E7%9A%84%E5%8D%8F%E8%AE%AE/"><span class="related-post-title">01-MCP深度解析：让AI真正连接世界的协议</span><span class="related-post-meta"><time datetime="2026-03-17T00:00:00.000Z"> Mar 17 </time></span></a><a class="related-post-row" href="/posts/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E6%8A%80%E6%9C%AF%E8%AF%A6%E8%A7%A3%EF%BC%9AFull_Fine-tuning_%C2%B7_LoRA_%C2%B7_QLoRA/"><span class="related-post-title">大模型微调技术详解：Full Fine-tuning · LoRA · QLoRA</span><span class="related-post-meta"><time datetime="2026-05-26T00:00:00.000Z"> May 26 </time></span></a><a class="related-post-row" href="/posts/%E5%B7%A5%E6%97%B6%E8%AE%A1%E7%AE%97%E5%99%A8%EF%BC%9A%E5%9F%BA%E4%BA%8EFunction_Calling/"><span class="related-post-title">工时计算器：基于Function Calling</span><span class="related-post-meta"><time datetime="2026-05-13T00:00:00.000Z"> May 13 </time></span></a><a class="related-post-row" href="/posts/%E4%BB%8E_Prompt_Context_Harness_Engineering_%E7%9C%8B_Agent_%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/"><span class="related-post-title">从 Prompt/Context/Harness Engineering 看 Agent 系统设计</span><span class="related-post-meta"><time datetime="2026-05-05T00:00:00.000Z"> May 5 </time></span></a></div></section> <div id="comments-section" class="article-comments-section is-comments-loading"><div id="waline" data-comment-system="waline" data-waline-path="4a54ecfb29064ed6"></div> <div class="waline-loading" aria-hidden="true"> <span class="waline-loading-spinner"></span> <span class="waline-loading-text">评论加载中…</span> </div> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@waline/client@v3/dist/waline.css"> <script>(function(){const walineOptions = {"el":"#waline","path":"4a54ecfb29064ed6","serverURL":"https://api.wqlblog.cn","dark":"html.dark","requiredMeta":["nick","mail"],"emoji":["https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/bilibili/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/qq/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/tieba/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/weibo/"],"search":false,"lang":"zh","pageview":true};
+const allowedCommentDomains = [];
+const allowLocalInDev = false;
+const walineClientCDNBase = "https://cdn.jsdelivr.net/npm/@waline/client@v3/dist";
+
+    window.__walineConfig = { walineOptions, allowedCommentDomains, allowLocalInDev, walineClientCDNBase };
+})();</script> <script type="module" src="/_astro/Waline.astro_astro_type_script_index_0_lang.BDyriLpI.js"></script></div> </article> </main> </div> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				document.querySelectorAll('[data-edge-toggle]').forEach(function(btn) {
+					var side = btn.dataset.edgeToggle;
+					var c = !!s[side];
+					if (c) btn.classList.add('is-collapsed');
+				});
+			} catch(e) {}
+		})();
+		</script> <aside class="article-fab" aria-label="Article actions"> <button class="fab-btn" data-fab="top" aria-label="Back to top" title="Back to top"> <span class="fab-ring"></span> <svg class="fab-progress-ring" viewBox="0 0 38 38" aria-hidden="true"> <circle cx="19" cy="19" r="17"></circle> <circle class="fab-progress-fill" cx="19" cy="19" r="17"></circle> </svg> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 19V5M5 12l7-7 7 7"></path> </svg> </span> </button> <button class="fab-btn sidebar-dependent-hide" data-fab="drawer" aria-label="Table of contents" title="Table of contents" data-mobile-drawer-toggle aria-expanded="false" aria-controls="mobileDrawer"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 12h18M3 6h18M3 18h18"></path> </svg> </span> </button> <button class="fab-btn" data-comments-jump data-article-id="4a54ecfb29064ed6" data-server-url="https://api.wqlblog.cn" aria-label="Comments" title="Comments"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path> </svg> <span class="fab-badge waline-comment-count" data-comments-count data-path="4a54ecfb29064ed6">—</span> </span> </button> </aside> </div> <script type="module" src="/_astro/_...slug_.astro_astro_type_script_index_0_lang.D1pIFJ8_.js"></script>  </div> <footer class="container mt-8"> <div class="py-4 border-t theme-divider text-sm theme-muted"> <div class="text-center space-y-1 md:space-y-0 md:grid md:grid-cols-3 md:items-center"> <div class="md:text-left">Copyright © 2026</div> <div class="md:text-center"> <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--theme-fg)] transition-colors"> 黔ICP备2022002432号 </a> </div> <div class="md:text-right">Built with Astro.</div> </div> </div> </footer> <div id="waline-config" data-server-url="https://api.wqlblog.cn" hidden></div> <script type="module">function m(e){if(!e)return"";try{return new URL(e,window.location.href).href}catch{return e}}function y(e){return e.currentSrc||e.getAttribute("data-src")||e.getAttribute("src")||""}function g(e,t){const r=y(e);if(!r)return;const n=e.closest("picture")||e,o=n.parentElement;if(!o)return;if(o.tagName==="A"){const s=o,i=m(s.getAttribute("href")),l=m(r);!s.dataset.fancybox&&(!i||i===l)&&(s.setAttribute("href",r),s.dataset.fancybox=t),e.alt&&!s.dataset.caption&&(s.dataset.caption=e.alt),s.classList.add("previewable-link");return}const c=document.createElement("a");c.href=r,c.dataset.fancybox=t,c.dataset.caption=e.alt||"",c.className="previewable-link",o.insertBefore(c,n),c.appendChild(n)}function b(e,t,r){let a=r;e?.getCarousel?.()?.on("change",(n,o)=>{a=o}),e?.on?.("destroy",()=>{const n=t[a]??t[r];n instanceof HTMLElement&&setTimeout(()=>{n.scrollIntoView({block:"nearest",behavior:"instant"})},0)})}function h(){return{Hash:!1,hideScrollbar:!1,Thumbs:{autoStart:!0,showOnStart:"yes"},Toolbar:{display:{left:["infobar"],middle:["zoomIn","zoomOut","toggle1to1"],right:["slideshow","thumbs","close"]}},animated:!0,dragToClose:!0,keyboard:{Escape:"close",Delete:"close",Backspace:"close",PageUp:"next",PageDown:"prev",ArrowUp:"next",ArrowDown:"prev",ArrowRight:"next",ArrowLeft:"prev"},fitToView:!0,preload:3,infinite:!0,Panzoom:{maxScale:3,minScale:1},Carousel:{transition:"slide",preload:2}}}function d(){const e=window.Fancybox||window?.["@fancyapps/ui"]?.Fancybox;!e||typeof e.fromNodes!="function"||(document.querySelectorAll(".prose").forEach((t,r)=>{if(!(t instanceof HTMLElement))return;const a=`post-gallery-${r}`;t.dataset.previewGallery=a,t.querySelectorAll("img").forEach(n=>{n instanceof HTMLImageElement&&(n.classList.add("previewable-image"),g(n,a))})}),!document.__fancyboxClickBound&&(document.__fancyboxClickBound=!0,document.addEventListener("click",t=>{const a=(t.target instanceof Element?t.target:null)?.closest("a[data-fancybox], a[data-mermaid-gallery]");if(!(a instanceof HTMLAnchorElement))return;const n=a.closest(".prose");if(!(n instanceof HTMLElement))return;t.preventDefault(),t.stopPropagation();const o="mermaidGallery"in a.dataset,c=o?a.dataset.mermaidGallery:a.dataset.fancybox,s=o?`a[data-mermaid-gallery="${c}"]`:c?`a[data-fancybox="${c}"]`:"a[data-fancybox]",i=Array.from(n.querySelectorAll(s)).filter(p=>p instanceof HTMLAnchorElement),l=i.indexOf(a);if(i.length===0)return;const u=l>=0?l:0,f=e.fromNodes(i,{...h(),startIndex:u,triggerEl:a,placeFocusBack:!1});o&&setTimeout(()=>{(f??e.getInstance())?.getContainer?.()?.classList.add("is-mermaid-gallery")},0),b(f??e.getInstance(),i,u)},!0)))}d();window.addEventListener("load",d);document.addEventListener("astro:page-load",d);document.addEventListener("astro:after-swap",d);</script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_1_lang.BxB3k7tA.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_2_lang.CHCRmhs5.js"></script> <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.umd.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_3_lang.mMDGy5WK.js"></script> </body> </html>
