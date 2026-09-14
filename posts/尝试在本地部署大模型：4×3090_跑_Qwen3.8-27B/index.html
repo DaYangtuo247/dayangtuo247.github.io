@@ -1,0 +1,509 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CDGfc0hd.js"></script> <!-- Global Metadata --> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <link rel="icon" type="image/x-icon" href="/favicon.ico"> <!-- 字体 CDN（jsDelivr，全球 CDN 含中国节点） --> <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin> <!-- Waline 评论/统计后端：提前建连，减少评论区首个请求的握手延迟 --> <link rel="preconnect" href="https://api.wqlblog.cn" crossorigin> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.css"> <meta name="generator" content="Astro v5.18.1"> <script>
+	(() => {
+		const MODE_KEY = 'theme-mode';
+		const root = document.documentElement;
+		const stored = localStorage.getItem(MODE_KEY) || localStorage.getItem('theme');
+		const mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+		const effective = mode === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : mode;
+
+		root.dataset.themeMode = mode;
+		root.classList.toggle('dark', effective === 'dark');
+		root.dataset.theme = effective;
+	})();
+</script> <!-- Canonical URL --> <link rel="canonical" href="https://www.wqlblog.cn/posts/%E5%B0%9D%E8%AF%95%E5%9C%A8%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2%E5%A4%A7%E6%A8%A1%E5%9E%8B%EF%BC%9A4%C3%973090_%E8%B7%91_Qwen3.8-27B/"> <!-- Primary Meta Tags --> <title>尝试在本地部署大模型：4×3090 跑 Qwen3.8-27B - KelrinWu&#39;s Blog</title> <meta name="title" content="尝试在本地部署大模型：4×3090 跑 Qwen3.8-27B - KelrinWu's Blog"> <meta name="description" content="在 4×RTX 3090 上用 vLLM 部署 Qwen3.8-27B 的完整记录：parser 与模板的配套关系、显存的实际分配、心跳日志各字段的含义，以及用一个真实编程任务实测出的速度与成本。"> <!-- Open Graph / Facebook --> <meta property="og:type" content="website"> <meta property="og:url" content="https://www.wqlblog.cn/posts/%E5%B0%9D%E8%AF%95%E5%9C%A8%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2%E5%A4%A7%E6%A8%A1%E5%9E%8B%EF%BC%9A4%C3%973090_%E8%B7%91_Qwen3.8-27B/"> <meta property="og:title" content="尝试在本地部署大模型：4×3090 跑 Qwen3.8-27B"> <meta property="og:description" content="在 4×RTX 3090 上用 vLLM 部署 Qwen3.8-27B 的完整记录：parser 与模板的配套关系、显存的实际分配、心跳日志各字段的含义，以及用一个真实编程任务实测出的速度与成本。"> <meta property="og:image" content="https://www.wqlblog.cn/favicon.ico"> <!-- Twitter --> <meta property="twitter:card" content="summary_large_image"> <meta property="twitter:url" content="https://www.wqlblog.cn/posts/%E5%B0%9D%E8%AF%95%E5%9C%A8%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2%E5%A4%A7%E6%A8%A1%E5%9E%8B%EF%BC%9A4%C3%973090_%E8%B7%91_Qwen3.8-27B/"> <meta property="twitter:title" content="尝试在本地部署大模型：4×3090 跑 Qwen3.8-27B"> <meta property="twitter:description" content="在 4×RTX 3090 上用 vLLM 部署 Qwen3.8-27B 的完整记录：parser 与模板的配套关系、显存的实际分配、心跳日志各字段的含义，以及用一个真实编程任务实测出的速度与成本。"> <meta property="twitter:image" content="https://www.wqlblog.cn/favicon.ico"><link rel="stylesheet" href="/_astro/_...slug_.WBhVMAu6.css">
+<link rel="stylesheet" href="/_astro/_slug_.ChLg2FS0.css">
+<link rel="stylesheet" href="/_astro/_slug_.3GJi6cRf.css">
+<link rel="stylesheet" href="/_astro/thoughts.CbYNSEou.css"></head> <body> <header id="site-header" class="site-header"> <div class="site-header-inner container"> <!-- Brand --> <a href="/" class="header-brand" aria-label="KelrinWu's Blog"> <img src="/img/avatar.png" alt="KelrinWu's Blog" class="header-avatar" width="32" height="32"> <span class="header-brand-name">KelrinWu&#39;s Blog</span> </a> <!-- Desktop nav links (hidden on mobile) --> <nav class="header-nav" aria-label="Main navigation"> <a href="/about/" class="header-nav-link" data-text="About"> About </a><a href="/posts/" class="header-nav-link is-active" data-text="Posts"> Posts </a><a href="/thoughts/" class="header-nav-link" data-text="Thoughts"> Thoughts </a><a href="/projects/" class="header-nav-link" data-text="Projects"> Projects </a><a href="/friends/" class="header-nav-link" data-text="Friends"> Friends </a><a href="/archive/" class="header-nav-link" data-text="Archive"> Archive </a> </nav> <!-- Right: actions + hamburger --> <div class="header-right"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> <button id="mobileNavToggle" class="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavMenu" type="button"> <span class="ham-line"></span> <span class="ham-line"></span> <span class="ham-line"></span> </button> </div> </div> <!-- Mobile dropdown menu --> <div id="mobileNavMenu" class="mobile-nav-menu" aria-hidden="true"> <a href="/about/" class="mobile-nav-item"> About </a><a href="/posts/" class="mobile-nav-item is-active"> Posts </a><a href="/thoughts/" class="mobile-nav-item"> Thoughts </a><a href="/projects/" class="mobile-nav-item"> Projects </a><a href="/friends/" class="mobile-nav-item"> Friends </a><a href="/archive/" class="mobile-nav-item"> Archive </a> </div> <script type="module" src="/_astro/Header.astro_astro_type_script_index_0_lang.DO65IW0S.js"></script> </header> <div id="mobileDrawer" class="mobile-drawer fixed inset-0 z-[1150] pointer-events-none sidebar-dependent-hide" aria-hidden="true"> <button class="mobile-drawer-backdrop absolute inset-0 border-0 bg-slate-900/34 backdrop-blur-lg opacity-0 transition-opacity duration-180" type="button" data-mobile-drawer-close aria-label="Close navigation menu"></button> <aside class="mobile-drawer-panel absolute inset-y-0 right-0 w-[min(84vw,22rem)] h-full border-l border-[var(--theme-border)] backdrop-blur-[22px] shadow-[0_24px_60px_rgba(15,23,42,0.16)] p-4 pb-6 overflow-y-auto translate-x-full transition-transform duration-[220ms] ease-[ease] theme-surface-float" role="dialog" aria-modal="true" aria-label="Article menu"> <div class="mobile-drawer-head flex items-center justify-between gap-4 mb-5"> <div class="text-[1.05rem] font-bold text-[var(--theme-fg)]">Contents</div> <button class="mobile-drawer-close inline-flex items-center justify-center w-10 h-10 flex-shrink-0" type="button" data-mobile-drawer-close aria-label="Close menu"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="mobile-drawer-extra grid gap-4">  <div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem]">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#模型介绍" data-index="0" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 模型介绍 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#一硬件与环境" data-index="1" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 一、硬件与环境 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#二启动参数" data-index="2" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 二、启动参数 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#三显存占用情况" data-index="3" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 三、显存占用情况 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#四心跳日志" data-index="4" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 四、心跳日志 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#五逐层验证" data-index="5" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 五、逐层验证 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#六客户端接入" data-index="6" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 六、客户端接入 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#七真实任务实测" data-index="7" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 七、真实任务实测 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#产物" data-index="8" data-parent-index="7" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 产物 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#八并发压测" data-index="9" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 八、并发压测 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#九成本核算" data-index="10" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 九、成本核算 </span> </a> </div>  </div> </nav><script type="module">function v(){document.querySelectorAll(".toc-scrollbar-container").forEach(s=>{const b=s.querySelector(".toc-scrollbar-wrap"),m=s.querySelector(".toc-custom-scrollbar"),p=s.querySelector(".toc-custom-scrollbar-thumb");if(!b||!m||!p)return;const t=b,h=m,n=p;function o(){const{scrollTop:r,scrollHeight:l,clientHeight:e}=t;if(l<=e){h.style.display="none";return}h.style.display="";const u=e/l,a=Math.max(16,u*e),i=e-a,d=r/(l-e)*i;n.style.height=`${a}px`,n.style.transform=`translateY(${d}px)`}if(o(),s.dataset.scrollbarBound==="true")return;s.dataset.scrollbarBound="true",t.addEventListener("scroll",o,{passive:!0}),new ResizeObserver(o).observe(t),new MutationObserver(o).observe(t,{childList:!0,subtree:!0,attributes:!0,attributeFilter:["class","style"]}),t.addEventListener("transitionend",o,{passive:!0});let c=!1,y=0,f=0;n.addEventListener("mousedown",r=>{r.preventDefault(),c=!0,y=r.clientY,f=t.scrollTop,document.body.style.userSelect="none"}),window.addEventListener("mousemove",r=>{if(!c)return;const{scrollHeight:l,clientHeight:e}=t,u=n.offsetHeight,a=e-u,i=r.clientY-y,d=l-e;t.scrollTop=f+i/a*d}),window.addEventListener("mouseup",()=>{c&&(c=!1,document.body.style.userSelect="")})})}v();document.addEventListener("astro:after-swap",v);</script> </div>  </div> </aside> </div> <script type="module" src="/_astro/MobileDrawer.astro_astro_type_script_index_0_lang.QZyAK5kg.js"></script> <div id="searchOverlay" class="search-overlay hidden" aria-hidden="true"> <div class="search-backdrop" data-search-close></div> <div class="search-panel" role="dialog" aria-modal="true" aria-labelledby="searchTitle"> <div class="search-head"> <div> <div id="searchTitle" class="search-title">Search</div> <div class="search-subtitle">Search by title, tag or description</div> </div> <button class="search-close" id="searchClose" type="button" aria-label="Close search"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="search-input-shell"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="11" cy="11" r="8"></circle> <path d="m21 21-4.35-4.35"></path> </svg> <input id="searchInput" class="search-input" type="search" placeholder="Try searching Transformer, database, MCP..." autocomplete="off"> </div> <div id="searchMeta" class="search-meta">Press <kbd>/</kbd> to open, <kbd>Esc</kbd> to close</div> <div id="searchResults" class="search-results"> <div class="search-empty"> <div class="search-empty-title">Start searching</div> <div class="search-empty-text">Matching posts will appear here in real time.</div> </div> </div> </div> </div> <script type="module" src="/_astro/SearchOverlay.astro_astro_type_script_index_0_lang.CCrLlu7v.js"></script> <div class="py-8 min-h-[calc(100vh-160px)]">   <div class="article-page-shell"> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				var g = document.querySelector('.article-desktop-grid');
+				if (!g) return;
+				g.style.transition = 'none';
+				if (s.right) g.classList.add('sidebar-right-collapsed');
+				g.offsetHeight;
+				g.style.transition = '';
+			} catch(e) {}
+		})();
+		</script> <div class="container article-desktop-grid group/scroll"> <aside class="article-right-rail" data-sidebar="right"> <div class="sidebar-toggle-wrapper sidebar-toggle-wrapper-right"> <button class="sidebar-toggle-btn sidebar-toggle-right" data-edge-toggle="right" aria-label="Toggle TOC sidebar"> <svg width="14" height="160" viewBox="0 0 14 160" fill="none" xmlns="http://www.w3.org/2000/svg"> <defs> <linearGradient id="gtr" x1="0" y1="0" x2="0" y2="73" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0.5"></stop> </linearGradient> <linearGradient id="gbr" x1="0" y1="87" x2="0" y2="160" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0.5"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop> </linearGradient> </defs> <line x1="7" y1="0" x2="7" y2="73" stroke="url(#gtr)" stroke-width="1"></line> <path d="M7 73 L11 80 L7 87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <line x1="7" y1="87" x2="7" y2="160" stroke="url(#gbr)" stroke-width="1"></line> </svg> </button> </div> <div class="article-rail-inner" data-sidebar-content="right"> <div class="toc-sticky-inner"> <div class="article-rail-dock article-rail-dock-right" data-article-header-dock="right" data-clone-ready="true"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> </div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem] toc-scrollbar-wrap max-h-[calc(100vh-70px)] overflow-y-auto">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#模型介绍" data-index="0" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 模型介绍 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#一硬件与环境" data-index="1" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 一、硬件与环境 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#二启动参数" data-index="2" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 二、启动参数 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#三显存占用情况" data-index="3" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 三、显存占用情况 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#四心跳日志" data-index="4" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 四、心跳日志 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#五逐层验证" data-index="5" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 五、逐层验证 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#六客户端接入" data-index="6" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 六、客户端接入 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#七真实任务实测" data-index="7" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 七、真实任务实测 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#产物" data-index="8" data-parent-index="7" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 产物 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#八并发压测" data-index="9" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 八、并发压测 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#九成本核算" data-index="10" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 九、成本核算 </span> </a> </div> <div class="toc-custom-scrollbar"> <div class="toc-custom-scrollbar-thumb"></div> </div> </div> </nav> </div> </div> </aside> <main class="grow article-main-column"> <article class="article-main-panel"> <div class="prose max-w-none dark:prose-invert
+  prose-img:rounded-xl prose-img:mx-auto prose-img:block
+  prose-h1:target:pt-20 prose-h2:target:pt-20 prose-h3:target:pt-20
+  prose-code:before:content-none prose-code:after:content-none
+  prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md">  <div class="article-title-block"> <!-- 1. 返回链接 --> <a href="/posts/" class="article-back-link" data-back-link> <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <polyline points="15 18 9 12 15 6"></polyline> </svg>
+Back to Posts
+</a> <!-- 2. 标题 --> <h1 class="article-title">尝试在本地部署大模型：4×3090 跑 Qwen3.8-27B</h1> <!-- 3. 分类/标签 + meta：合并为一行 flex，窄屏自然换行 --> <div class="article-header-inline-row"> <div class="article-label-row"> <a href="/archive/?category=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD" class="pill-tag px-2 py-0.5 text-xs no-underline">人工智能</a><a href="/archive/?category=%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5" class="pill-tag px-2 py-0.5 text-xs no-underline">工程实践</a> <a href="/archive/?tag=vLLM" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;vLLM</a><a href="/archive/?tag=Qwen" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;Qwen</a><a href="/archive/?tag=%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;本地部署</a><a href="/archive/?tag=LLM%20%E6%8E%A8%E7%90%86" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;LLM 推理</a><a href="/archive/?tag=AI%20Agent" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;AI Agent</a> </div> <div class="article-meta-row"> <div class="flex items-center gap-1" title="Published"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect> <line x1="16" y1="2" x2="16" y2="6"></line> <line x1="8" y1="2" x2="8" y2="6"></line> <line x1="3" y1="10" x2="21" y2="10"></line> </svg> <time datetime="2026-09-05T00:00:00.000Z"> Sep 5, 2026 </time> </div> <div class="flex items-center gap-1" title="Reading time"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <polyline points="12 6 12 12 16 14"></polyline> </svg> <span>21 min read</span> </div> <div class="flex items-center gap-1" title="Views"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path> <circle cx="12" cy="12" r="3"></circle> </svg> <span class="waline-pageview-count" data-path="1bc2781e7a38ba5a">—</span> </div> </div> </div> <!-- 4. 分割线 --> <div class="article-title-divider"></div> </div> <div class="article-content"> <h2 id="模型介绍"><a href="#模型介绍">模型介绍</a><a href="#模型介绍" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="模型介绍"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>Qwen3.8-27B 是阿里 Qwen 于 2026 年 8 月发布的开源权重模型，采用 Apache 2.0 许可。同期发布的还有 2.4T 参数的 Qwen3.8-Max，但与个人硬件真正相关的是这个 27B 版本——它是稠密模型而非 MoE，尺寸面向单机部署设计。它同时是原生视觉语言模型，可直接处理图像与视频输入，涵盖 STEM 图表、文档乃至小时级视频。</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>规格</th><th></th></tr></thead><tbody><tr><td>模型类型</td><td>带视觉编码器的因果 LM</td></tr><tr><td>参数</td><td>27B 稠密（BF16 磁盘约 28B）</td></tr><tr><td>隐藏维度 / 层数</td><td>5,120 / 64</td></tr><tr><td>隐藏布局</td><td>16 × (3 × (Gated DeltaNet → FFN) → 1 × (Gated Attention → FFN))</td></tr><tr><td>线性注意力头</td><td>48 V / 16 QK（Gated DeltaNet），维度 128</td></tr><tr><td>注意力头</td><td>24 Q / 4 KV（Gated Attention），维度 256</td></tr><tr><td>FFN 中间维度</td><td>17,408</td></tr><tr><td>上下文</td><td>原生 262,144 token，可通过 YaRN 扩展至 1M</td></tr><tr><td>输入 / 输出</td><td>文本、图像、视频 / 文本</td></tr><tr><td>许可</td><td>Apache 2.0</td></tr></tbody></table></div>
+<p>架构上，64 层并非同构堆叠：每 4 层中 3 层用 Gated DeltaNet（线性注意力，降低长上下文开销），1 层用 Gated Attention（保留全局建模能力），如此循环 16 次，再配合多 token 预测加速解码。这套结构较新，推理框架版本必须跟上。</p>
+<h2 id="一硬件与环境"><a href="#一硬件与环境">一、硬件与环境</a><a href="#一硬件与环境" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="一硬件与环境"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>上述规格决定了本次部署会遇到的主要约束：稠密结构意味着每生成一个 token 都需读取全部 27B 参数，解码速度受限；混合注意力较新，框架版本需要足够高；262K 上下文虽然可观，但 KV cache 须按此上限预留显存。</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>项目</th><th>配置</th></tr></thead><tbody><tr><td>GPU</td><td>4 × RTX 3090（24GB × 4），驱动 580.159.03 / CUDA 13.0</td></tr><tr><td>框架</td><td>vLLM 0.28.0（需 0.17.0 以上，该版本起提供 Gated DeltaNet kernel）</td></tr><tr><td>模型</td><td>Qwen3.8-27B，BF16 约 51.7GB</td></tr><tr><td>并行</td><td>张量并行 TP=4</td></tr></tbody></table></div>
+<h2 id="二启动参数"><a href="#二启动参数">二、启动参数</a><a href="#二启动参数" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="二启动参数"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line" data-line="1"><span style="color:#6F42C1;--shiki-dark:#B392F0">python</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -m</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> vllm.entrypoints.openai.api_server</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="2"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --model</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$MODEL</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --served-model-name</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> qwen3.8-27b</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="3"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --tensor-parallel-size</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 4</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="4"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --gpu-memory-utilization</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0.95</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="5"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --max-model-len</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 262144</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="6"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --chat-template</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="color:#24292E;--shiki-dark:#E1E4E8">$TEMPLATE</span><span style="color:#032F62;--shiki-dark:#9ECBFF">"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="7"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --enable-auto-tool-choice</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="8"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --tool-call-parser</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> qwen3_xml</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="9"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --reasoning-parser</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> qwen3</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="10"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --host</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0.0.0.0</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --port</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 8000</span></span></code></pre></div>
+<p>其中三个参数彼此配套，任意修改一项都可能导致工具调用整体失效：</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>参数</th><th>配置依据</th><th>配错的现象</th></tr></thead><tbody><tr><td><code>--tool-call-parser qwen3_xml</code></td><td>Qwen3.8 的工具调用为 XML 风格而非 JSON，<code>qwen3_coder</code> 同样可用</td><td>沿用教程中常见的 <code>hermes</code> 会解析失败，工具调用链路中断</td></tr><tr><td><code>--reasoning-parser qwen3</code></td><td>生成提示预填了 <code>&#x3C;think>\n</code>，模型输出自”思考中间”开始，不含起始标签</td><td>思考过程与正式回答混合输出</td></tr><tr><td><code>--chat-template</code></td><td>官方模板在工具调用与历史消息渲染上存在问题，改用社区增强版</td><td>工具调用稳定性下降，且不影响多模态能力</td></tr></tbody></table></div>
+<p>Qwen3.8 输出的工具调用形如下例，与 <code>hermes</code> 预期的 JSON 结构并不匹配：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="xml"><code><span class="line" data-line="1"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">tool_call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line" data-line="2"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=get_weather></span></span>
+<span class="line" data-line="3"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#22863A;--shiki-dark:#85E89D">parameter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">=city>武汉&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">parameter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line" data-line="4"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">function</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span>
+<span class="line" data-line="5"><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;/</span><span style="color:#22863A;--shiki-dark:#85E89D">tool_call</span><span style="color:#24292E;--shiki-dark:#E1E4E8">></span></span></code></pre></div>
+<h2 id="三显存占用情况"><a href="#三显存占用情况">三、显存占用情况</a><a href="#三显存占用情况" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="三显存占用情况"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p><img alt="nvidia-smi 显示 4 张 3090 各占约 23GB" loading="lazy" decoding="async" fetchpriority="auto" width="1478" height="878" src="/_astro/nvidia-smi.Ct3eJML0_Z1lVDoe.webp" ></p>
+<p>四张卡分别占用 23116 / 23093 / 23093 / 23095 MiB，数值高度一致，这正是张量并行的特征：每卡分到同等大小的权重分片。</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>用途</th><th>每卡大小</th></tr></thead><tbody><tr><td>模型权重（51.7GB ÷ 4）</td><td>~13GB</td></tr><tr><td>激活值、CUDA graph、通信缓冲</td><td>1-2GB</td></tr><tr><td>KV cache 池</td><td>~8-9GB</td></tr></tbody></table></div>
+<p>vLLM 将总预算减去权重与运行时开销，其余全部预分配为 KV cache 池，切分成固定大小的块统一管理，请求从池中申请、用毕归还，池本身容量不变。由此产生两个容易误判的现象：<code>nvidia-smi</code> 的数值恒定，空闲与满负载时完全一致；<code>GPU-Util 100%</code> 也不代表算力跑满，解码阶段大部分时间在等待显存读写。</p>
+<p>并发增加并不会提高显存占用，只会加剧池内竞争。池接近上限时新请求进入排队，完全耗尽时触发 preemption，将执行中的请求换出后重新计算。若需提升并发，可启用 <code>--kv-cache-dtype fp8</code>，KV cache 存储减半相当于池容量翻倍。</p>
+<h2 id="四心跳日志"><a href="#四心跳日志">四、心跳日志</a><a href="#四心跳日志" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="四心跳日志"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>真实负载只能通过 vLLM 每 10 秒输出的这行统计判断。</p>
+<p><img alt="vLLM 运行日志：每 10 秒一行的引擎统计" loading="lazy" decoding="async" fetchpriority="auto" width="2529" height="1475" src="/_astro/server-log.BOPPRK7M_1sS6zX.webp" ></p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>Engine 000: Avg prompt throughput: 42.1 tokens/s, Avg generation throughput: 27.5 tokens/s,</span></span>
+<span class="line" data-line="2"><span>Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 8.6%,</span></span>
+<span class="line" data-line="3"><span>Prefix cache hit rate: 75.4%, MM cache hit rate: 75.0%</span></span></code></pre></div>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>字段</th><th>含义</th><th>截图中的数值说明什么</th><th>异常信号</th></tr></thead><tbody><tr><td><code>Avg prompt throughput</code></td><td>prefill 阶段的输入处理速率</td><td>多数行为 <code>0.0</code>，表示该 10 秒内无新请求，引擎处于纯解码状态</td><td>恒为 0 但客户端确在发送请求，说明请求未到达服务端</td></tr><tr><td><code>Avg generation throughput</code></td><td>decode 阶段的输出生成速率</td><td>稳定在 28~29 tok/s，即这套配置的上限</td><td>骤降说明并发升高或上下文变长</td></tr><tr><td><code>Running</code> / <code>Waiting</code></td><td>执行中、排队中的请求数</td><td>1 / 0，产能有富余</td><td><code>Waiting</code> 持续大于 0，说明受限于池容量或 <code>--max-num-seqs</code></td></tr><tr><td><code>GPU KV cache usage</code></td><td>KV 块池的占用水位</td><td>三分钟内由 7.7% 升至 9.2%，单会话历史在增长</td><td>长期低于 20% 说明窗口设置过大，超过 90% 则临近 preempt</td></tr><tr><td><code>Prefix cache hit rate</code></td><td>前缀缓存命中率</td><td>75%，agent 场景下本身就偏高</td><td>骤降说明历史被改写或缓存块遭淘汰</td></tr><tr><td><code>MM cache hit rate</code></td><td>图像 ViT embedding 缓存命中率</td><td>恒定 75.0% 未变化，说明该时段无新图像输入</td><td>纯文本服务可忽略</td></tr></tbody></table></div>
+<p>有三处容易读错。两个 throughput 均为 10 秒窗口平均值，一次仅几十毫秒的 prefill 摊入窗口后会显示为几十 tok/s，不宜据此估算真实能力；<code>Prefix cache hit rate</code> 恰好相反，是自进程启动以来的累计值，变化极为缓慢，由 74.5% 升至 75.4% 的背后是数十万 token 的积累；<code>Avg generation throughput</code> 统计的是全部并发请求的总吞吐，8 个请求并发时总量可达 90 tok/s，但单个请求仅分到 11 tok/s。</p>
+<p>29 tok/s 偏低的原因在于 decode 属于 memory-bound：每生成一个 token 都要完整读取 51.7GB 权重。按每卡 13GB、RTX 3090 显存带宽约 936GB/s 计算，理论上限为 72 tok/s，实测仅达 40%，其余开销来自缺少 NVLink 而经 PCIe 的 all-reduce、长上下文下 attention 对 KV cache 的额外读取，以及 kernel 启动开销。</p>
+<p>日志中还会穿插 <code>POST /v1/responses HTTP/1.1" 200 OK</code> 一类访问记录，可据此确认客户端实际使用的端点。排查工具调用失效时应先看这一行：若请求根本未到达，则问题出在客户端配置，与 parser 无关。</p>
+<h2 id="五逐层验证"><a href="#五逐层验证">五、逐层验证</a><a href="#五逐层验证" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="五逐层验证"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>服务启动不等于可用。建议先用 curl 逐个验证三类端点，再接入客户端，这样出现问题可立即定位到具体层次。</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>能力</th><th>端点</th><th>验证要点</th></tr></thead><tbody><tr><td>纯文本</td><td><code>/v1/chat/completions</code></td><td><code>reasoning</code> 与 <code>content</code> 是否为分离的两个字段</td></tr><tr><td>工具调用</td><td><code>/v1/messages</code>（Anthropic 兼容）</td><td>是否返回 <code>"type": "tool_use"</code> 结构化 block，<code>stop_reason</code> 是否为 <code>"tool_use"</code></td></tr><tr><td>多模态</td><td><code>/v1/chat/completions</code></td><td>更换自定义 chat template 后能力是否受损</td></tr></tbody></table></div>
+<p>工具调用是最容易出错的环节：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line" data-line="1"><span style="color:#6F42C1;--shiki-dark:#B392F0">curl</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> http://127.0.0.1:8000/v1/messages</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="2"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "Content-Type: application/json"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> -H</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "anthropic-version: 2023-06-01"</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="3"><span style="color:#005CC5;--shiki-dark:#79B8FF">  -d</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '{</span></span>
+<span class="line" data-line="4"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "model": "qwen3.8-27b", "max_tokens": 512,</span></span>
+<span class="line" data-line="5"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "tools": [{"name": "get_weather", "description": "获取指定城市的天气",</span></span>
+<span class="line" data-line="6"><span style="color:#032F62;--shiki-dark:#9ECBFF">      "input_schema": {"type":"object","properties":{"city":{"type":"string"}},"required":["city"]}}],</span></span>
+<span class="line" data-line="7"><span style="color:#032F62;--shiki-dark:#9ECBFF">    "messages": [{"role": "user", "content": "武汉今天天气怎么样"}]</span></span>
+<span class="line" data-line="8"><span style="color:#032F62;--shiki-dark:#9ECBFF">  }'</span></span></code></pre></div>
+<p>parser 不匹配时，整段 <code>&#x3C;tool_call></code> 会作为纯文本归入 <code>"type": "text"</code>，<code>stop_reason</code> 变为 <code>"end_turn"</code>。多模态测试中若服务器无法访问外网图片，可用 base64 传输本地文件，注意 <code>base64 -w 0</code> 需关闭自动换行，否则会破坏 JSON 结构。</p>
+<p><img alt="多模态测试：模型描述一张金属链条素材图" loading="lazy" decoding="async" fetchpriority="auto" width="2278" height="1678" src="/_astro/multimodal-test.DVZG1m1s_2hmBAR.webp" ></p>
+<p>模型识别出了主体、构图、背景倒影与光线，并读出了图片中央那处半透明的图库水印。</p>
+<h2 id="六客户端接入"><a href="#六客户端接入">六、客户端接入</a><a href="#六客户端接入" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="六客户端接入"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>vLLM 同时提供三套 API，多数 agent 客户端均可直接接入：</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>端点</th><th>协议</th><th>典型客户端</th></tr></thead><tbody><tr><td><code>/v1/chat/completions</code></td><td>OpenAI Chat Completions</td><td>多数工具与 SDK</td></tr><tr><td><code>/v1/messages</code></td><td>Anthropic Messages</td><td>Claude Code</td></tr><tr><td><code>/v1/responses</code></td><td>OpenAI Responses</td><td>部分新式 agent 框架</td></tr></tbody></table></div>
+<p>以 Claude Code 为例：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line" data-line="1"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ANTHROPIC_BASE_URL</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">http://127.0.0.1:8000</span></span>
+<span class="line" data-line="2"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ANTHROPIC_AUTH_TOKEN</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">dummy</span></span>
+<span class="line" data-line="3"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ANTHROPIC_MODEL</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">qwen3.8-27b</span></span>
+<span class="line" data-line="4"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ANTHROPIC_SMALL_FAST_MODEL</span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8">qwen3.8-27b</span></span></code></pre></div>
+<p><code>SMALL_FAST_MODEL</code> 必须设置，否则后台小任务（生成标题、压缩上下文）会转而请求真正的 Anthropic API 并失败。未启用 <code>--api-key</code> 时 token 可任意填写，但不能为空。若客户端在本地而服务在远程，用 <code>ssh -N -L 8000:127.0.0.1:8000 user@server</code> 建立隧道即可，也无需将端口暴露到网络上。</p>
+<h2 id="七真实任务实测"><a href="#七真实任务实测">七、真实任务实测</a><a href="#七真实任务实测" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="七真实任务实测"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>使用了一个需要多步工具调用的完整任务：</p>
+<blockquote>
+<p>写一个网页版本的俄罗斯方块，要美观，然后我本地有 npm、nodejs 等，使用什么框架由你来定，然后使用键盘的上下左右按钮来控制，工作空间就在当前目录，你创建一个新文件夹，并启动这个项目。</p>
+</blockquote>
+<p>不指定框架用于考察自主决策，创建目录、写入文件、安装依赖、启动服务用于考察多轮工具调用，“要美观”则用于考察默认审美。同一 prompt 在两个 agent 客户端各执行一次，其中一个将统计信息展示在状态栏。</p>
+<p><img alt="agent 客户端的执行统计：24 次工具调用、输入 844K / 输出 37.1K token" loading="lazy" decoding="async" fetchpriority="auto" width="2490" height="1496" src="/_astro/harness-stats.ClU7eXkr_cNGah.webp" ></p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>指标</th><th>数值</th></tr></thead><tbody><tr><td>步数 / 工具调用</td><td>23 步 · 24 次</td></tr><tr><td>LLM 耗时</td><td>20 分 05 秒（工具执行仅 25.8 秒）</td></tr><tr><td>首 token / 输出速度</td><td>0.8 秒 / 31 tok/s</td></tr><tr><td>缓存命中</td><td>98%</td></tr><tr><td>token 用量</td><td>输入 844K · 输出 37.1K</td></tr><tr><td>最终产物</td><td>约 800 行代码</td></tr></tbody></table></div>
+<p>输入输出比为 23:1，原因是 agent 每一步都需将整段历史重新发送，输入量呈平方级累积。因此 98% 的前缀缓存命中率是性能的决定性因素：844K 输入中实际执行 prefill 的仅约 1.7 万 token，命中率若降至 90%，未命中量将升至 84K，prefill 工作量增至五倍。</p>
+<p>瓶颈完全位于解码环节，LLM 耗时 20 分 05 秒而工具执行仅 25.8 秒。37.1K 输出除以 31 tok/s 约为 1197 秒，与实测基本吻合，因此估算耗时只需一个公式：任务耗时 ≈ 输出 token ÷ 解码速度。相同输出量在 150 tok/s 的托管服务上只需 4 分钟。另外这 37.1K 输出最终仅产出约 800 行代码，按 JavaScript 每行 10~12 token 粗略估算，约四分之三的输出用于思考过程、工具调用参数与中间返工。</p>
+<p>真实输出节奏（原速录制）：</p>
+<p><video src="/img/qwen3-8-27b/speed-demo.mp4" controls playsinline preload="metadata" style="width:100%;border-radius:8px;"></video></p>
+<h3 id="产物"><a href="#产物">产物</a><a href="#产物" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="产物"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>模型选择了 Vite 7 加原生 Canvas，理由是 Canvas 渲染最为直接、帧率最高，且无需 React 一类运行时框架。</p>
+<p><img alt="生成的项目文件树" loading="lazy" decoding="async" fetchpriority="auto" width="564" height="590" src="/_astro/project-tree.Bxqhwytr_Z1ttOXu.webp" ></p>
+<p>代码没有集中堆在单个 <code>index.html</code> 中，四个源文件合计 800 行上下。其中 <code>sound.js</code> 是 prompt 未提及的，由模型自行添加。</p>
+<p><img alt="Claude Code 生成的版本" loading="lazy" decoding="async" fetchpriority="auto" width="1724" height="1410" src="/_astro/tetris-claude-code.CnIPu1im_Z19cBXb.webp" ></p>
+<p>第一版为标准实现：暗色渐变背景、圆角发光方块、分数等级消行统计、下一块预览与按键说明。</p>
+<p><img alt="第二个 harness 生成的版本" loading="lazy" decoding="async" fetchpriority="auto" width="1476" height="1468" src="/_astro/tetris-harness-b.DwZKCrtE_Z153WX.webp" ></p>
+<p>第二版额外实现了 HOLD 暂存位、NEXT 队列一次预览三块、幽灵方块落点预览、历史最高分与音效开关，按键扩展至 C / P / M / R，这些均不在 prompt 要求之内。</p>
+<p><video src="/img/qwen3-8-27b/tetris-demo.mp4" controls playsinline preload="metadata" style="width:100%;border-radius:8px;"></video></p>
+<p>两版实测下来，旋转碰撞、踢墙、消行与计分均正常。二者的差异更多来自 harness 而非模型本身，不同客户端的 system prompt、工具集与规划策略各不相同。更换 harness 带来的效果差异，可能大于更换模型。</p>
+<h2 id="八并发压测"><a href="#八并发压测">八、并发压测</a><a href="#八并发压测" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="八并发压测"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>前面几节的数值都来自单会话，无法反映多用户同时使用时的表现。用 <code>vllm bench serve</code> 打一轮固定负载：100 条请求，输入 512 / 输出 256 token，请求速率 10 RPS，并发上限 32，<code>temperature 0</code>。</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line" data-line="1"><span style="color:#6F42C1;--shiki-dark:#B392F0">vllm</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> bench</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> serve</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="2"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --backend</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> openai-chat</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --base-url</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> http://localhost:8000</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="3"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --endpoint</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /v1/chat/completions</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="4"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --model</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> qwen3.8-27b</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --tokenizer</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> /path/to/Qwen3.8-27B</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="5"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --num-prompts</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 100</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --max-concurrency</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 32</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --request-rate</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 10</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> \</span></span>
+<span class="line" data-line="6"><span style="color:#005CC5;--shiki-dark:#79B8FF">  --dataset-name</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> random</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --input-len</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 512</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --output-len</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 256</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --temperature</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span></span></code></pre></div>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="text"><code><span class="line" data-line="1"><span>Successful requests:                     100</span></span>
+<span class="line" data-line="2"><span>Benchmark duration (s):                  61.13</span></span>
+<span class="line" data-line="3"><span>Output token throughput (tok/s):         418.75</span></span>
+<span class="line" data-line="4"><span>Peak output token throughput (tok/s):    835.00</span></span>
+<span class="line" data-line="5"><span>Total token throughput (tok/s):          1341.93</span></span>
+<span class="line" data-line="6"><span>Peak concurrent requests:                39.00</span></span>
+<span class="line" data-line="7"><span>Mean TTFT (ms):    2092.20   Median: 2274.05   P99: 4405.95</span></span>
+<span class="line" data-line="8"><span>Mean TPOT (ms):      58.76   Median:   60.73   P99:   68.06</span></span>
+<span class="line" data-line="9"><span>Mean ITL  (ms):      58.76   Median:   38.88   P99:  765.30</span></span></code></pre></div>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>指标</th><th>数值</th><th>说明</th></tr></thead><tbody><tr><td>总耗时 / 成功率</td><td>61.13 s / 100 失败 0</td><td>100 条请求全部完成，服务在该负载下稳定</td></tr><tr><td>输出吞吐</td><td>418.75 tok/s（峰值 835）</td><td>32 并发下的聚合值，约为单会话 29 tok/s 的 14 倍，批处理摊薄了权重读取开销</td></tr><tr><td>总吞吐</td><td>1341.93 tok/s</td><td>含 prefill，输入输出合计</td></tr><tr><td>TTFT</td><td>中位 2.27 s，P99 4.41 s</td><td>请求以 10 RPS 涌入、并发触顶 39，prefill 需排队，首 token 明显慢于单会话的 0.8 s</td></tr><tr><td>TPOT</td><td>中位 60.7 ms，P99 68.1 ms</td><td>单请求解码约 16 tok/s，即每个用户实际感受到的速度</td></tr><tr><td>ITL</td><td>中位 38.9 ms，P99 765 ms</td><td>P99 抖动来自 prefill 与 decode 抢占同一批次，长尾出现在有新请求插入的时刻</td></tr></tbody></table></div>
+<p>结论与第四节一致：并发提升的是集群总吞吐而非单用户体验。32 人同时使用时，聚合吞吐涨到约 419 tok/s，但每人只分到 16 tok/s，且首 token 要等 2 秒以上。这套配置适合吞吐优先的离线批处理，交互式多用户场景则需要下调并发或接受更长的响应延迟。</p>
+<h2 id="九成本核算"><a href="#九成本核算">九、成本核算</a><a href="#九成本核算" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="九成本核算"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>核算之前需先区分两个常被混淆的量，否则结论会整体失真。</p>
+<p>844K 是 23 次请求的累加值，并非上下文窗口。窗口约束的是单次请求可容纳的长度，而累计 token 是把 23 次调用的输入分别相加，同一批历史被反复计费，因此累计值必然远大于窗口。</p>
+<p>单次峰值可以反推：上下文近似线性增长，累加值约等于 <code>步数 × 峰值 ÷ 2</code>，得到峰值约为 844K ÷ 23 × 2 ≈ 73K。<code>--max-model-len 262144</code> 全程未用到一半，第四节日志中 KV 水位仅 9% 也印证了这一点。</p>
+<p>窗口一致是两侧 token 可比的前提。73K 在主流的 128K/256K 窗口中均可容纳，因此本次两侧确为同一数量。但只要 API 一侧窗口更小，或主动限制上下文长度，harness 就必须中途压缩历史，届时 token 总量会变化，前缀缓存也会因前缀不再逐字一致而全部失效。</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>维度</th><th>本地 4×RTX 3090</th><th>官方托管 API（同规格）</th></tr></thead><tbody><tr><td>单次上下文窗口</td><td>262K，可自行设定，但需以 KV cache 预算为代价</td><td>由厂商设定，通常 128K~256K</td></tr><tr><td>本次任务峰值上下文</td><td>约 73K</td><td>约 73K</td></tr><tr><td>全任务累计 token</td><td>输入 844K · 输出 37.1K</td><td>窗口足够、不触发压缩时才相同</td></tr><tr><td>解码速度 / 耗时</td><td>29 tok/s · 20 分 05 秒</td><td>约 150 tok/s · 约 4 分</td></tr><tr><td>单任务边际成本</td><td>电费约 ¥0.26</td><td>约 ¥1.5（$0.21）</td></tr><tr><td>前期投入</td><td>约 ¥30,000</td><td>¥0</td></tr></tbody></table></div>
+<p>成本算法列出如下，便于替换为自己的数值重新计算。API 侧按混合价 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0.24</mn><mi mathvariant="normal">/</mi><mi>M</mi><mtext>计，</mtext><mo stretchy="false">(</mo><mn>844</mn><mi>K</mi><mo>+</mo><mn>37.1</mn><mi>K</mi><mo stretchy="false">)</mo><mo>×</mo></mrow><annotation encoding="application/x-tex">0.24/M 计，(844K + 37.1K) × </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">0.24/</span><span class="mord mathnormal" style="margin-right:0.109em;">M</span><span class="mord cjk_fallback">计，</span><span class="mopen">(</span><span class="mord">844</span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">37.1</span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span><span class="mclose">)</span><span class="mord">×</span></span></span></span>0.24/M ≈ $0.21；本地侧按 4 张卡实测 270~288W、整机 1.3kW 计，运行 20 分钟即 0.43 kWh，按 ¥0.6/kWh 得 ¥0.26。</p>
+<p>仅看边际成本，本地约便宜 6 倍，但代价是 5 倍的时间。此外 ¥30,000 的前期投入需要约 2.4 万次同等规模的任务才能收回，按每天 10 个任务计需要 6.6 年。</p>
+<p><img alt="15 个模型 × 5 档负载的本地部署回本测算矩阵" loading="lazy" decoding="async" fetchpriority="auto" width="2266" height="2102" src="/_astro/roi-matrix.NyE1EwlC_1tcke3.webp" ></p>
+<p>换个角度验证：Qwen3.8-27B 一行即便按 2000 万 token/日 的高强度使用，回本周期仍需 6.1 年，与上文由电费独立推算出的 6.6 年基本一致，而硬件通常三年即面临换代。同表中的 Qwen3-Coder-Next 80B 为 MoE 架构，激活参数仅 3B，输出速度 149 tok/s，回本周期 1.5 年。差距的根源正在于稠密结构：稠密模型每生成一个 token 都需读取全部 27B 参数，而同级 MoE 只需读取激活的 3B。</p>
+<p>另有一点值得注意，本地部署反而可能使 token 用量上升。按 token 计费时使用者会主动压缩上下文，本地缺少这一价格信号，262K 窗口一经开启便倾向于保留全部历史，前述 844K 输入中有相当一部分正是因无计费压力而未做清理。</p>
+<p>结论是，若以节省 API 费用为目的进行本地部署，这笔账在多数情况下难以成立，稠密模型尤其处于劣势。真正成立的理由在于其他方面：数据不出内网、不受速率限制、可修改推理逻辑、便于研究。</p> </div> </div> <div data-reward-root class="reward-container relative"> <button class="reward-like-btn" data-reward-like data-article-id="1bc2781e7a38ba5a" data-server-url="https://api.wqlblog.cn" aria-label="Like this post" title="Like"> <svg class="reward-like-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M7 10v12"></path> <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"></path> </svg> <span class="reward-like-count">—</span> </button> <p class="reward-line">
+如果这篇对你有帮助，可以
+<span class="reward-trigger inline-block" data-reward-open role="status" aria-expanded="false">请我喝杯咖啡</span> </p> <p class="reward-license">
+本文采用
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer license" class="no-underline">CC BY-NC-SA 4.0</a>
+协议，转载请注明出处
+</p> <div class="reward-popover invisible absolute left-0 right-0 mx-auto bottom-full mb-3 w-[500px] max-w-[90vw] pointer-events-none z-[9999]" data-reward-popover aria-hidden="true"> <div class="rounded-2xl p-4" style="border: 1px solid var(--theme-border); background: var(--theme-surface-elevated); box-shadow: var(--theme-shadow-md)"> <img src="/img/donate.png" alt="Donation QR code" class="mx-auto w-full h-auto rounded-lg"> <p class="text-center text-sm mt-2" style="color: var(--theme-muted)">Thank you for your support!</p> </div> </div> </div> <script type="module">function r(){document.querySelectorAll("[data-reward-root]").forEach(t=>{if(!(t instanceof HTMLElement)||t.dataset.rewardInitialized==="1")return;const a=t.querySelector("[data-reward-open]"),e=t.querySelector("[data-reward-popover]");if(a&&e instanceof HTMLElement){let n;const d=()=>{clearTimeout(n),e.classList.add("reward-popover-open"),e.setAttribute("aria-hidden","false"),a.setAttribute("aria-expanded","true")},o=()=>{n=setTimeout(()=>{e.classList.remove("reward-popover-open"),e.setAttribute("aria-hidden","true"),a.setAttribute("aria-expanded","false")},100)};a.addEventListener("mouseenter",d),e.addEventListener("mouseenter",d),a.addEventListener("mouseleave",o),e.addEventListener("mouseleave",o),t.dataset.rewardInitialized="1"}})}r();document.addEventListener("astro:page-load",r);document.addEventListener("astro:after-swap",r);</script> <!-- 上一篇 / 下一篇 --><nav class="article-post-nav"> <a href="/posts/Pi_Agent_Core_架构剖析/" class="post-nav-link post-nav-prev"> <span class="post-nav-label"> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+上一篇
+</span> <span class="post-nav-title">Pi Agent Core 架构剖析</span> </a> <a href="/posts/DeepSeek_Harness_与_Cordis_内核剖析/" class="post-nav-link post-nav-next"> <span class="post-nav-label">
+下一篇
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg> </span> <span class="post-nav-title">DeepSeek Harness 与 Cordis 内核剖析</span> </a> </nav> <section class="related-posts-section"><h2 class="related-posts-title">延伸阅读</h2><div class="related-posts-list"><a class="related-post-row" href="/posts/Pi_Agent_Core_%E6%9E%B6%E6%9E%84%E5%89%96%E6%9E%90/"><span class="related-post-title">Pi Agent Core 架构剖析</span><span class="related-post-meta"><time datetime="2026-08-19T00:00:00.000Z"> Aug 19 </time></span></a><a class="related-post-row" href="/posts/DeepSeek_Harness_%E4%B8%8E_Cordis_%E5%86%85%E6%A0%B8%E5%89%96%E6%9E%90/"><span class="related-post-title">DeepSeek Harness 与 Cordis 内核剖析</span><span class="related-post-meta"><time datetime="2026-09-13T00:00:00.000Z"> Sep 13 </time></span></a><a class="related-post-row" href="/posts/%E9%A9%AF%E6%9C%8D_Claude_Code%EF%BC%9A%E4%B8%83%E7%A7%8D%E5%BC%95%E5%AF%BC%E5%AE%83%E8%A1%8C%E4%B8%BA%E7%9A%84%E6%96%B9%E5%BC%8F/"><span class="related-post-title">驯服 Claude Code：七种引导它行为的方式</span><span class="related-post-meta"><time datetime="2026-07-02T00:00:00.000Z"> Jul 2 </time></span></a><a class="related-post-row" href="/posts/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E6%8A%80%E6%9C%AF%E8%AF%A6%E8%A7%A3%EF%BC%9AFull_Fine-tuning_%C2%B7_LoRA_%C2%B7_QLoRA/"><span class="related-post-title">大模型微调技术详解：Full Fine-tuning · LoRA · QLoRA</span><span class="related-post-meta"><time datetime="2026-05-26T00:00:00.000Z"> May 26 </time></span></a><a class="related-post-row" href="/posts/%E5%B7%A5%E6%97%B6%E8%AE%A1%E7%AE%97%E5%99%A8%EF%BC%9A%E5%9F%BA%E4%BA%8EFunction_Calling/"><span class="related-post-title">工时计算器：基于Function Calling</span><span class="related-post-meta"><time datetime="2026-05-13T00:00:00.000Z"> May 13 </time></span></a><a class="related-post-row" href="/posts/%E4%BB%8E_Prompt_Context_Harness_Engineering_%E7%9C%8B_Agent_%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/"><span class="related-post-title">从 Prompt/Context/Harness Engineering 看 Agent 系统设计</span><span class="related-post-meta"><time datetime="2026-05-05T00:00:00.000Z"> May 5 </time></span></a></div></section> <div id="comments-section" class="article-comments-section is-comments-loading"><div id="waline" data-comment-system="waline" data-waline-path="1bc2781e7a38ba5a"></div> <div class="waline-loading" aria-hidden="true"> <span class="waline-loading-spinner"></span> <span class="waline-loading-text">评论加载中…</span> </div> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@waline/client@v3/dist/waline.css"> <script>(function(){const walineOptions = {"el":"#waline","path":"1bc2781e7a38ba5a","serverURL":"https://api.wqlblog.cn","dark":"html.dark","requiredMeta":["nick","mail"],"emoji":["https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/bilibili/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/qq/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/tieba/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/weibo/"],"search":false,"lang":"zh","pageview":true};
+const allowedCommentDomains = [];
+const allowLocalInDev = false;
+const walineClientCDNBase = "https://cdn.jsdelivr.net/npm/@waline/client@v3/dist";
+
+    window.__walineConfig = { walineOptions, allowedCommentDomains, allowLocalInDev, walineClientCDNBase };
+})();</script> <script type="module" src="/_astro/Waline.astro_astro_type_script_index_0_lang.BDyriLpI.js"></script></div> </article> </main> </div> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				document.querySelectorAll('[data-edge-toggle]').forEach(function(btn) {
+					var side = btn.dataset.edgeToggle;
+					var c = !!s[side];
+					if (c) btn.classList.add('is-collapsed');
+				});
+			} catch(e) {}
+		})();
+		</script> <aside class="article-fab" aria-label="Article actions"> <button class="fab-btn" data-fab="top" aria-label="Back to top" title="Back to top"> <span class="fab-ring"></span> <svg class="fab-progress-ring" viewBox="0 0 38 38" aria-hidden="true"> <circle cx="19" cy="19" r="17"></circle> <circle class="fab-progress-fill" cx="19" cy="19" r="17"></circle> </svg> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 19V5M5 12l7-7 7 7"></path> </svg> </span> </button> <button class="fab-btn sidebar-dependent-hide" data-fab="drawer" aria-label="Table of contents" title="Table of contents" data-mobile-drawer-toggle aria-expanded="false" aria-controls="mobileDrawer"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 12h18M3 6h18M3 18h18"></path> </svg> </span> </button> <button class="fab-btn" data-comments-jump data-article-id="1bc2781e7a38ba5a" data-server-url="https://api.wqlblog.cn" aria-label="Comments" title="Comments"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path> </svg> <span class="fab-badge waline-comment-count" data-comments-count data-path="1bc2781e7a38ba5a">—</span> </span> </button> </aside> </div> <script type="module" src="/_astro/_...slug_.astro_astro_type_script_index_0_lang.D1pIFJ8_.js"></script>  </div> <footer class="container mt-8"> <div class="py-4 border-t theme-divider text-sm theme-muted"> <div class="text-center space-y-1 md:space-y-0 md:grid md:grid-cols-3 md:items-center"> <div class="md:text-left">Copyright © 2026</div> <div class="md:text-center"> <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--theme-fg)] transition-colors"> 黔ICP备2022002432号 </a> </div> <div class="md:text-right">Built with Astro.</div> </div> </div> </footer> <div id="waline-config" data-server-url="https://api.wqlblog.cn" hidden></div> <script type="module">function m(e){if(!e)return"";try{return new URL(e,window.location.href).href}catch{return e}}function y(e){return e.currentSrc||e.getAttribute("data-src")||e.getAttribute("src")||""}function g(e,t){const r=y(e);if(!r)return;const n=e.closest("picture")||e,o=n.parentElement;if(!o)return;if(o.tagName==="A"){const s=o,i=m(s.getAttribute("href")),l=m(r);!s.dataset.fancybox&&(!i||i===l)&&(s.setAttribute("href",r),s.dataset.fancybox=t),e.alt&&!s.dataset.caption&&(s.dataset.caption=e.alt),s.classList.add("previewable-link");return}const c=document.createElement("a");c.href=r,c.dataset.fancybox=t,c.dataset.caption=e.alt||"",c.className="previewable-link",o.insertBefore(c,n),c.appendChild(n)}function b(e,t,r){let a=r;e?.getCarousel?.()?.on("change",(n,o)=>{a=o}),e?.on?.("destroy",()=>{const n=t[a]??t[r];n instanceof HTMLElement&&setTimeout(()=>{n.scrollIntoView({block:"nearest",behavior:"instant"})},0)})}function h(){return{Hash:!1,hideScrollbar:!1,Thumbs:{autoStart:!0,showOnStart:"yes"},Toolbar:{display:{left:["infobar"],middle:["zoomIn","zoomOut","toggle1to1"],right:["slideshow","thumbs","close"]}},animated:!0,dragToClose:!0,keyboard:{Escape:"close",Delete:"close",Backspace:"close",PageUp:"next",PageDown:"prev",ArrowUp:"next",ArrowDown:"prev",ArrowRight:"next",ArrowLeft:"prev"},fitToView:!0,preload:3,infinite:!0,Panzoom:{maxScale:3,minScale:1},Carousel:{transition:"slide",preload:2}}}function d(){const e=window.Fancybox||window?.["@fancyapps/ui"]?.Fancybox;!e||typeof e.fromNodes!="function"||(document.querySelectorAll(".prose").forEach((t,r)=>{if(!(t instanceof HTMLElement))return;const a=`post-gallery-${r}`;t.dataset.previewGallery=a,t.querySelectorAll("img").forEach(n=>{n instanceof HTMLImageElement&&(n.classList.add("previewable-image"),g(n,a))})}),!document.__fancyboxClickBound&&(document.__fancyboxClickBound=!0,document.addEventListener("click",t=>{const a=(t.target instanceof Element?t.target:null)?.closest("a[data-fancybox], a[data-mermaid-gallery]");if(!(a instanceof HTMLAnchorElement))return;const n=a.closest(".prose");if(!(n instanceof HTMLElement))return;t.preventDefault(),t.stopPropagation();const o="mermaidGallery"in a.dataset,c=o?a.dataset.mermaidGallery:a.dataset.fancybox,s=o?`a[data-mermaid-gallery="${c}"]`:c?`a[data-fancybox="${c}"]`:"a[data-fancybox]",i=Array.from(n.querySelectorAll(s)).filter(p=>p instanceof HTMLAnchorElement),l=i.indexOf(a);if(i.length===0)return;const u=l>=0?l:0,f=e.fromNodes(i,{...h(),startIndex:u,triggerEl:a,placeFocusBack:!1});o&&setTimeout(()=>{(f??e.getInstance())?.getContainer?.()?.classList.add("is-mermaid-gallery")},0),b(f??e.getInstance(),i,u)},!0)))}d();window.addEventListener("load",d);document.addEventListener("astro:page-load",d);document.addEventListener("astro:after-swap",d);</script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_1_lang.DRxIS7cC.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_2_lang.CHCRmhs5.js"></script> <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.umd.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_3_lang.mMDGy5WK.js"></script> </body> </html>

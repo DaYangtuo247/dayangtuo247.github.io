@@ -1,0 +1,567 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CDGfc0hd.js"></script> <!-- Global Metadata --> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <link rel="icon" type="image/x-icon" href="/favicon.ico"> <!-- 字体 CDN（jsDelivr，全球 CDN 含中国节点） --> <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin> <!-- Waline 评论/统计后端：提前建连，减少评论区首个请求的握手延迟 --> <link rel="preconnect" href="https://api.wqlblog.cn" crossorigin> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.css"> <meta name="generator" content="Astro v5.18.1"> <script>
+	(() => {
+		const MODE_KEY = 'theme-mode';
+		const root = document.documentElement;
+		const stored = localStorage.getItem(MODE_KEY) || localStorage.getItem('theme');
+		const mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+		const effective = mode === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : mode;
+
+		root.dataset.themeMode = mode;
+		root.classList.toggle('dark', effective === 'dark');
+		root.dataset.theme = effective;
+	})();
+</script> <!-- Canonical URL --> <link rel="canonical" href="https://www.wqlblog.cn/posts/Pi_Agent_Core_%E6%9E%B6%E6%9E%84%E5%89%96%E6%9E%90/"> <!-- Primary Meta Tags --> <title>Pi Agent Core 架构剖析 - KelrinWu&#39;s Blog</title> <meta name="title" content="Pi Agent Core 架构剖析 - KelrinWu's Blog"> <meta name="description" content="剖析 Pi（badlogic/pi-mono）的 agent-loop.ts 源码：三层架构、状态机、一轮对话的泳道图，对照 GitHub 真实代码逐段拆解 agent 的核心执行循环。"> <!-- Open Graph / Facebook --> <meta property="og:type" content="website"> <meta property="og:url" content="https://www.wqlblog.cn/posts/Pi_Agent_Core_%E6%9E%B6%E6%9E%84%E5%89%96%E6%9E%90/"> <meta property="og:title" content="Pi Agent Core 架构剖析"> <meta property="og:description" content="剖析 Pi（badlogic/pi-mono）的 agent-loop.ts 源码：三层架构、状态机、一轮对话的泳道图，对照 GitHub 真实代码逐段拆解 agent 的核心执行循环。"> <meta property="og:image" content="https://www.wqlblog.cn/favicon.ico"> <!-- Twitter --> <meta property="twitter:card" content="summary_large_image"> <meta property="twitter:url" content="https://www.wqlblog.cn/posts/Pi_Agent_Core_%E6%9E%B6%E6%9E%84%E5%89%96%E6%9E%90/"> <meta property="twitter:title" content="Pi Agent Core 架构剖析"> <meta property="twitter:description" content="剖析 Pi（badlogic/pi-mono）的 agent-loop.ts 源码：三层架构、状态机、一轮对话的泳道图，对照 GitHub 真实代码逐段拆解 agent 的核心执行循环。"> <meta property="twitter:image" content="https://www.wqlblog.cn/favicon.ico"><link rel="stylesheet" href="/_astro/_...slug_.WBhVMAu6.css">
+<link rel="stylesheet" href="/_astro/_slug_.ChLg2FS0.css">
+<link rel="stylesheet" href="/_astro/_slug_.3GJi6cRf.css">
+<link rel="stylesheet" href="/_astro/thoughts.CbYNSEou.css"></head> <body> <header id="site-header" class="site-header"> <div class="site-header-inner container"> <!-- Brand --> <a href="/" class="header-brand" aria-label="KelrinWu's Blog"> <img src="/img/avatar.png" alt="KelrinWu's Blog" class="header-avatar" width="32" height="32"> <span class="header-brand-name">KelrinWu&#39;s Blog</span> </a> <!-- Desktop nav links (hidden on mobile) --> <nav class="header-nav" aria-label="Main navigation"> <a href="/about/" class="header-nav-link" data-text="About"> About </a><a href="/posts/" class="header-nav-link is-active" data-text="Posts"> Posts </a><a href="/thoughts/" class="header-nav-link" data-text="Thoughts"> Thoughts </a><a href="/projects/" class="header-nav-link" data-text="Projects"> Projects </a><a href="/friends/" class="header-nav-link" data-text="Friends"> Friends </a><a href="/archive/" class="header-nav-link" data-text="Archive"> Archive </a> </nav> <!-- Right: actions + hamburger --> <div class="header-right"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> <button id="mobileNavToggle" class="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavMenu" type="button"> <span class="ham-line"></span> <span class="ham-line"></span> <span class="ham-line"></span> </button> </div> </div> <!-- Mobile dropdown menu --> <div id="mobileNavMenu" class="mobile-nav-menu" aria-hidden="true"> <a href="/about/" class="mobile-nav-item"> About </a><a href="/posts/" class="mobile-nav-item is-active"> Posts </a><a href="/thoughts/" class="mobile-nav-item"> Thoughts </a><a href="/projects/" class="mobile-nav-item"> Projects </a><a href="/friends/" class="mobile-nav-item"> Friends </a><a href="/archive/" class="mobile-nav-item"> Archive </a> </div> <script type="module" src="/_astro/Header.astro_astro_type_script_index_0_lang.DO65IW0S.js"></script> </header> <div id="mobileDrawer" class="mobile-drawer fixed inset-0 z-[1150] pointer-events-none sidebar-dependent-hide" aria-hidden="true"> <button class="mobile-drawer-backdrop absolute inset-0 border-0 bg-slate-900/34 backdrop-blur-lg opacity-0 transition-opacity duration-180" type="button" data-mobile-drawer-close aria-label="Close navigation menu"></button> <aside class="mobile-drawer-panel absolute inset-y-0 right-0 w-[min(84vw,22rem)] h-full border-l border-[var(--theme-border)] backdrop-blur-[22px] shadow-[0_24px_60px_rgba(15,23,42,0.16)] p-4 pb-6 overflow-y-auto translate-x-full transition-transform duration-[220ms] ease-[ease] theme-surface-float" role="dialog" aria-modal="true" aria-label="Article menu"> <div class="mobile-drawer-head flex items-center justify-between gap-4 mb-5"> <div class="text-[1.05rem] font-bold text-[var(--theme-fg)]">Contents</div> <button class="mobile-drawer-close inline-flex items-center justify-center w-10 h-10 flex-shrink-0" type="button" data-mobile-drawer-close aria-label="Close menu"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="mobile-drawer-extra grid gap-4">  <div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem]">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#三层架构总览" data-index="0" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 三层架构总览 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#agent-loop-状态机" data-index="1" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> Agent Loop 状态机 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#一轮对话的泳道图" data-index="2" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 一轮对话的泳道图 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#源码逐段拆解" data-index="3" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 源码逐段拆解 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#41-循环的入口runloop" data-index="4" data-parent-index="3" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 4.1 循环的入口：runLoop() </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#42-工具怎么被翻译成真正的调用preparetoolcall" data-index="5" data-parent-index="3" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 4.2 工具怎么被”翻译”成真正的调用：prepareToolCall() </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#43-并行-vs-串行执行" data-index="6" data-parent-index="3" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 4.3 并行 vs 串行执行 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#三个值得记住的设计决策" data-index="7" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 三个值得记住的设计决策 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#和已经会的-react-loop-对比一下" data-index="8" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 和已经会的 ReAct loop 对比一下 </span> </a> </div>  </div> </nav><script type="module">function v(){document.querySelectorAll(".toc-scrollbar-container").forEach(s=>{const b=s.querySelector(".toc-scrollbar-wrap"),m=s.querySelector(".toc-custom-scrollbar"),p=s.querySelector(".toc-custom-scrollbar-thumb");if(!b||!m||!p)return;const t=b,h=m,n=p;function o(){const{scrollTop:r,scrollHeight:l,clientHeight:e}=t;if(l<=e){h.style.display="none";return}h.style.display="";const u=e/l,a=Math.max(16,u*e),i=e-a,d=r/(l-e)*i;n.style.height=`${a}px`,n.style.transform=`translateY(${d}px)`}if(o(),s.dataset.scrollbarBound==="true")return;s.dataset.scrollbarBound="true",t.addEventListener("scroll",o,{passive:!0}),new ResizeObserver(o).observe(t),new MutationObserver(o).observe(t,{childList:!0,subtree:!0,attributes:!0,attributeFilter:["class","style"]}),t.addEventListener("transitionend",o,{passive:!0});let c=!1,y=0,f=0;n.addEventListener("mousedown",r=>{r.preventDefault(),c=!0,y=r.clientY,f=t.scrollTop,document.body.style.userSelect="none"}),window.addEventListener("mousemove",r=>{if(!c)return;const{scrollHeight:l,clientHeight:e}=t,u=n.offsetHeight,a=e-u,i=r.clientY-y,d=l-e;t.scrollTop=f+i/a*d}),window.addEventListener("mouseup",()=>{c&&(c=!1,document.body.style.userSelect="")})})}v();document.addEventListener("astro:after-swap",v);</script> </div>  </div> </aside> </div> <script type="module" src="/_astro/MobileDrawer.astro_astro_type_script_index_0_lang.QZyAK5kg.js"></script> <div id="searchOverlay" class="search-overlay hidden" aria-hidden="true"> <div class="search-backdrop" data-search-close></div> <div class="search-panel" role="dialog" aria-modal="true" aria-labelledby="searchTitle"> <div class="search-head"> <div> <div id="searchTitle" class="search-title">Search</div> <div class="search-subtitle">Search by title, tag or description</div> </div> <button class="search-close" id="searchClose" type="button" aria-label="Close search"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="search-input-shell"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="11" cy="11" r="8"></circle> <path d="m21 21-4.35-4.35"></path> </svg> <input id="searchInput" class="search-input" type="search" placeholder="Try searching Transformer, database, MCP..." autocomplete="off"> </div> <div id="searchMeta" class="search-meta">Press <kbd>/</kbd> to open, <kbd>Esc</kbd> to close</div> <div id="searchResults" class="search-results"> <div class="search-empty"> <div class="search-empty-title">Start searching</div> <div class="search-empty-text">Matching posts will appear here in real time.</div> </div> </div> </div> </div> <script type="module" src="/_astro/SearchOverlay.astro_astro_type_script_index_0_lang.CCrLlu7v.js"></script> <div class="py-8 min-h-[calc(100vh-160px)]">   <div class="article-page-shell"> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				var g = document.querySelector('.article-desktop-grid');
+				if (!g) return;
+				g.style.transition = 'none';
+				if (s.right) g.classList.add('sidebar-right-collapsed');
+				g.offsetHeight;
+				g.style.transition = '';
+			} catch(e) {}
+		})();
+		</script> <div class="container article-desktop-grid group/scroll"> <aside class="article-right-rail" data-sidebar="right"> <div class="sidebar-toggle-wrapper sidebar-toggle-wrapper-right"> <button class="sidebar-toggle-btn sidebar-toggle-right" data-edge-toggle="right" aria-label="Toggle TOC sidebar"> <svg width="14" height="160" viewBox="0 0 14 160" fill="none" xmlns="http://www.w3.org/2000/svg"> <defs> <linearGradient id="gtr" x1="0" y1="0" x2="0" y2="73" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0.5"></stop> </linearGradient> <linearGradient id="gbr" x1="0" y1="87" x2="0" y2="160" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0.5"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop> </linearGradient> </defs> <line x1="7" y1="0" x2="7" y2="73" stroke="url(#gtr)" stroke-width="1"></line> <path d="M7 73 L11 80 L7 87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <line x1="7" y1="87" x2="7" y2="160" stroke="url(#gbr)" stroke-width="1"></line> </svg> </button> </div> <div class="article-rail-inner" data-sidebar-content="right"> <div class="toc-sticky-inner"> <div class="article-rail-dock article-rail-dock-right" data-article-header-dock="right" data-clone-ready="true"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> </div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem] toc-scrollbar-wrap max-h-[calc(100vh-70px)] overflow-y-auto">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#三层架构总览" data-index="0" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 三层架构总览 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#agent-loop-状态机" data-index="1" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> Agent Loop 状态机 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#一轮对话的泳道图" data-index="2" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 一轮对话的泳道图 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#源码逐段拆解" data-index="3" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 源码逐段拆解 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#41-循环的入口runloop" data-index="4" data-parent-index="3" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 4.1 循环的入口：runLoop() </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#42-工具怎么被翻译成真正的调用preparetoolcall" data-index="5" data-parent-index="3" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 4.2 工具怎么被”翻译”成真正的调用：prepareToolCall() </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#43-并行-vs-串行执行" data-index="6" data-parent-index="3" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 4.3 并行 vs 串行执行 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#三个值得记住的设计决策" data-index="7" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 三个值得记住的设计决策 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#和已经会的-react-loop-对比一下" data-index="8" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 和已经会的 ReAct loop 对比一下 </span> </a> </div> <div class="toc-custom-scrollbar"> <div class="toc-custom-scrollbar-thumb"></div> </div> </div> </nav> </div> </div> </aside> <main class="grow article-main-column"> <article class="article-main-panel"> <div class="prose max-w-none dark:prose-invert
+  prose-img:rounded-xl prose-img:mx-auto prose-img:block
+  prose-h1:target:pt-20 prose-h2:target:pt-20 prose-h3:target:pt-20
+  prose-code:before:content-none prose-code:after:content-none
+  prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md">  <div class="article-title-block"> <!-- 1. 返回链接 --> <a href="/posts/" class="article-back-link" data-back-link> <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <polyline points="15 18 9 12 15 6"></polyline> </svg>
+Back to Posts
+</a> <!-- 2. 标题 --> <h1 class="article-title">Pi Agent Core 架构剖析</h1> <!-- 3. 分类/标签 + meta：合并为一行 flex，窄屏自然换行 --> <div class="article-header-inline-row"> <div class="article-label-row"> <a href="/archive/?category=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD" class="pill-tag px-2 py-0.5 text-xs no-underline">人工智能</a><a href="/archive/?category=%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5" class="pill-tag px-2 py-0.5 text-xs no-underline">工程实践</a> <a href="/archive/?tag=AI%20Agent" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;AI Agent</a><a href="/archive/?tag=TypeScript" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;TypeScript</a><a href="/archive/?tag=%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;架构设计</a> </div> <div class="article-meta-row"> <div class="flex items-center gap-1" title="Published"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect> <line x1="16" y1="2" x2="16" y2="6"></line> <line x1="8" y1="2" x2="8" y2="6"></line> <line x1="3" y1="10" x2="21" y2="10"></line> </svg> <time datetime="2026-08-19T00:00:00.000Z"> Aug 19, 2026 </time> </div> <div class="flex items-center gap-1" title="Reading time"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <polyline points="12 6 12 12 16 14"></polyline> </svg> <span>19 min read</span> </div> <div class="flex items-center gap-1" title="Views"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path> <circle cx="12" cy="12" r="3"></circle> </svg> <span class="waline-pageview-count" data-path="300b1312ad42893c">—</span> </div> </div> </div> <!-- 4. 分割线 --> <div class="article-title-divider"></div> </div> <div class="article-content"> <p>Pi 是 Mario Zechner 写的极简 TypeScript agent harness，是 OpenClaw 等一批编程 agent 背后的执行内核。这篇文档将解析<code>Pi agent core</code>，只画状态机、画泳道图，然后对照 <code>packages/agent/src/agent-loop.ts</code> 的真实源码逐段拆解——这个文件在 GitHub 上 805 行，是整个 agent 的”心脏”。</p>
+<p><code>TypeScript</code> · <code>MIT License</code> · <code>badlogic/pi-mono</code> · 核心 loop ≈300 行</p>
+<h2 id="三层架构总览"><a href="#三层架构总览">三层架构总览</a><a href="#三层架构总览" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="三层架构总览"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>pi-mono 是个 monorepo，四个包按依赖关系分层。越往下越通用（LLM 通信），越往上越具体（终端 UI、会话管理）。要学的”agent 逻辑”全部在第二层。</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 760 400" role="img" aria-label="四层架构：应用层、pi-agent-core、pi-ai、LLM Provider API">
+  <defs>
+    <marker id="hpArrGrayA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head"></path>
+    </marker>
+  </defs>
+  <rect x="60" y="20" width="640" height="64" rx="8" class="hp-node"></rect>
+  <text x="80" y="44" class="hp-t-title">pi-coding-agent / OpenClaw / 你的 App</text>
+  <text x="80" y="64" class="hp-t-sub">会话持久化、工具集(read/write/edit/bash)、扩展系统、TUI</text>
+  <line x1="380" y1="84" x2="380" y2="112" class="hp-arrow" marker-end="url(#hpArrGrayA)"></line>
+  <rect x="60" y="112" width="640" height="90" rx="8" class="hp-node-accent"></rect>
+  <text x="80" y="140" class="hp-t-accent">pi-agent-core ← 今天要看的这一层</text>
+  <text x="80" y="162" class="hp-t-accent-sub">agent-loop.ts · types.ts · agent.ts</text>
+  <text x="80" y="180" class="hp-t-sub">状态管理 · 工具调用编排 · 事件流(EventStream) · 与 LLM 无关</text>
+  <line x1="380" y1="202" x2="380" y2="230" class="hp-arrow" marker-end="url(#hpArrGrayA)"></line>
+  <rect x="60" y="230" width="640" height="64" rx="8" class="hp-node"></rect>
+  <text x="80" y="254" class="hp-t-title">pi-ai</text>
+  <text x="80" y="274" class="hp-t-sub">统一多厂商 LLM API：Anthropic / OpenAI / Google / Bedrock ... 负责真正发请求、解析流式事件</text>
+  <line x1="380" y1="294" x2="380" y2="322" class="hp-arrow" marker-end="url(#hpArrGrayA)"></line>
+  <rect x="60" y="322" width="640" height="56" rx="8" class="hp-node"></rect>
+  <text x="80" y="356" class="hp-t-sub">LLM Provider API (Anthropic / OpenAI / ...)</text>
+</svg>
+</div>
+<p><em>依赖方向自上而下 · pi-agent-core 不认识任何具体 LLM 厂商，只认识 pi-ai 抛出的统一事件流</em></p>
+<p>换句话说：<strong>pi-coding-agent 只是 pi-agent-core 的一个”重度用户”</strong>——它往 agent loop 里塞了 4 个工具（read / write / edit / bash）和一堆工程设施（会话存盘、终端渲染），核心决策循环完全不属于它。这也是为什么只需要吃透中间那一层。</p>
+<h2 id="agent-loop-状态机"><a href="#agent-loop-状态机">Agent Loop 状态机</a><a href="#agent-loop-状态机" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="agent-loop-状态机"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>这是 <code>runLoop()</code> 函数（agent-loop.ts 第 190 行左右开始）的真实控制流，不是简化版。注意它是<strong>双层循环</strong>：内层处理”工具调用没跑完”，外层处理”用户在 agent 停下后又发了新消息”。</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 780 700" role="img" aria-label="Agent Loop 状态机：从 prompt 进入到 agent_end 的完整控制流">
+  <defs>
+    <marker id="hpArrGrayB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head"></path>
+    </marker>
+    <marker id="hpArrAccentB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head-accent"></path>
+    </marker>
+  </defs>
+  <rect x="300" y="10" width="180" height="40" rx="20" class="hp-pill-accent"></rect>
+  <text x="390" y="35" text-anchor="middle" class="hp-t-oncontrast">prompt 进入 runLoop()</text>
+  <line x1="390" y1="50" x2="390" y2="76" class="hp-arrow" marker-end="url(#hpArrGrayB)"></line>
+  <rect x="290" y="76" width="200" height="42" rx="6" class="hp-node"></rect>
+  <text x="390" y="102" text-anchor="middle" class="hp-t-title-sm">emit turn_start</text>
+  <line x1="390" y1="118" x2="390" y2="144" class="hp-arrow" marker-end="url(#hpArrGrayB)"></line>
+  <rect x="255" y="144" width="270" height="42" rx="6" class="hp-node"></rect>
+  <text x="390" y="170" text-anchor="middle" class="hp-t-title-sm">注入 pendingMessages(steering)</text>
+  <line x1="390" y1="186" x2="390" y2="212" class="hp-arrow" marker-end="url(#hpArrGrayB)"></line>
+  <rect x="230" y="212" width="320" height="50" rx="6" class="hp-node-accent"></rect>
+  <text x="390" y="235" text-anchor="middle" class="hp-t-accent">streamAssistantResponse()</text>
+  <text x="390" y="252" text-anchor="middle" class="hp-t-sub">调 LLM，流式吐 token / thinking / toolCall</text>
+  <line x1="390" y1="262" x2="390" y2="288" class="hp-arrow" marker-end="url(#hpArrGrayB)"></line>
+  <polygon points="390,288 480,326 390,364 300,326" class="hp-node"></polygon>
+  <text x="390" y="322" text-anchor="middle" class="hp-t-title-sm">stopReason ==</text>
+  <text x="390" y="336" text-anchor="middle" class="hp-t-title-sm">error/aborted?</text>
+  <line x1="480" y1="326" x2="640" y2="326" class="hp-danger-line" marker-end="url(#hpArrGrayB)"></line>
+  <text x="555" y="316" text-anchor="middle" class="hp-danger-text-sm">是</text>
+  <rect x="600" y="304" width="150" height="42" rx="6" class="hp-node-danger"></rect>
+  <text x="675" y="330" text-anchor="middle" class="hp-danger-text">agent_end (异常)</text>
+  <line x1="390" y1="364" x2="390" y2="390" class="hp-arrow" marker-end="url(#hpArrGrayB)"></line>
+  <text x="405" y="382" class="hp-t-sub-xs">否</text>
+  <polygon points="390,390 490,428 390,466 290,428" class="hp-node"></polygon>
+  <text x="390" y="424" text-anchor="middle" class="hp-t-title-sm">message 里有</text>
+  <text x="390" y="438" text-anchor="middle" class="hp-t-title-sm">toolCall？</text>
+  <line x1="490" y1="428" x2="600" y2="428" class="hp-warn-line" marker-end="url(#hpArrGrayB)"></line>
+  <text x="530" y="418" text-anchor="middle" class="hp-warn-text-sm">是</text>
+  <rect x="560" y="400" width="190" height="56" rx="6" class="hp-node-warn"></rect>
+  <text x="655" y="424" text-anchor="middle" class="hp-warn-text">executeToolCalls()</text>
+  <text x="655" y="440" text-anchor="middle" class="hp-warn-text-sub">parallel 或 sequential</text>
+  <path d="M 655 400 L 655 108 L 500 97" class="hp-warn-line" fill="none" marker-end="url(#hpArrGrayB)"></path>
+  <text x="660" y="240" transform="rotate(-90 660 240)" class="hp-warn-text-sm">hasMoreToolCalls=true → 回到 turn_start</text>
+  <line x1="390" y1="466" x2="390" y2="492" class="hp-arrow" marker-end="url(#hpArrGrayB)"></line>
+  <text x="405" y="484" class="hp-t-sub-xs">否</text>
+  <polygon points="390,492 500,530 390,568 280,530" class="hp-node"></polygon>
+  <text x="390" y="526" text-anchor="middle" class="hp-t-title-sm">shouldStopAfterTurn</text>
+  <text x="390" y="540" text-anchor="middle" class="hp-t-title-sm">回调返回 true？</text>
+  <line x1="500" y1="530" x2="640" y2="530" class="hp-danger-line" marker-end="url(#hpArrGrayB)"></line>
+  <text x="555" y="520" text-anchor="middle" class="hp-danger-text-sm">是</text>
+  <rect x="600" y="508" width="150" height="42" rx="6" class="hp-node-danger"></rect>
+  <text x="675" y="534" text-anchor="middle" class="hp-danger-text">agent_end (正常)</text>
+  <line x1="390" y1="568" x2="390" y2="592" class="hp-arrow" marker-end="url(#hpArrGrayB)"></line>
+  <text x="405" y="584" class="hp-t-sub-xs">否</text>
+  <polygon points="390,592 510,630 390,668 270,630" class="hp-node-accent-outline"></polygon>
+  <text x="390" y="622" text-anchor="middle" class="hp-t-accent-sm">外层循环：</text>
+  <text x="390" y="636" text-anchor="middle" class="hp-t-accent-sm">有 followUpMessages？</text>
+  <path d="M 510 630 L 620 630 L 620 108 L 500 97" class="hp-accent-line-dashed" fill="none" marker-end="url(#hpArrAccentB)"></path>
+  <text x="625" y="360" transform="rotate(-90 625 360)" class="hp-t-accent-sm">是 → continue 外层 while，回到 turn_start</text>
+  <line x1="390" y1="668" x2="390" y2="690" class="hp-arrow" marker-end="url(#hpArrGrayB)"></line>
+  <text x="405" y="682" class="hp-t-sub-xs">否 → break</text>
+</svg>
+</div>
+<p><em>红框 = 唯一出口(agent_end) · 橙色 = 工具执行分支(内层循环) · 绿色虚线 = 外层循环(处理”agent 停下后用户又发消息”)</em></p>
+<blockquote>
+<p>这张图对应”循环终止条件”——Pi 的终止条件不是一个，而是三层判断：① LLM 是否报错/被中断，② 这一轮有没有新的工具调用要执行，③ 业务层的 <code>shouldStopAfterTurn</code> 回调是否说”够了”。真正跳出双层循环，靠的是最后那次 <code>return</code>，而不是某个计数器。</p>
+</blockquote>
+<h2 id="一轮对话的泳道图"><a href="#一轮对话的泳道图">一轮对话的泳道图</a><a href="#一轮对话的泳道图" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="一轮对话的泳道图"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>把状态机换个视角看：谁在什么时候跟谁通信。这张图画的是”用户输入 → 一次工具调用 → 得到答案”的完整单轮时序。</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 780 480" role="img" aria-label="泳道图：User、agent-loop.ts、pi-ai、Tool.execute 四条泳道的一轮完整时序">
+  <defs>
+    <marker id="hpArrGrayC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head"></path>
+    </marker>
+  </defs>
+  <line x1="120" y1="40" x2="120" y2="460" class="hp-lane-line"></line>
+  <line x1="320" y1="40" x2="320" y2="460" class="hp-lane-line"></line>
+  <line x1="520" y1="40" x2="520" y2="460" class="hp-lane-line"></line>
+  <line x1="700" y1="40" x2="700" y2="460" class="hp-lane-line"></line>
+  <text x="120" y="24" text-anchor="middle" class="hp-t-title">User</text>
+  <text x="320" y="24" text-anchor="middle" class="hp-t-accent">agent-loop.ts</text>
+  <text x="520" y="24" text-anchor="middle" class="hp-blue-text">pi-ai (LLM)</text>
+  <text x="700" y="24" text-anchor="middle" class="hp-warn-text">Tool.execute()</text>
+  <circle cx="120" cy="60" r="4" class="hp-dot"></circle>
+  <line x1="120" y1="60" x2="316" y2="60" class="hp-arrow" marker-end="url(#hpArrGrayC)"></line>
+  <text x="220" y="52" text-anchor="middle" class="hp-t-sub">"帮我读一下 package.json"</text>
+  <rect x="290" y="76" width="60" height="20" rx="4" class="hp-node-accent"></rect>
+  <text x="320" y="90" text-anchor="middle" class="hp-t-accent-xs">emit</text>
+  <line x1="320" y1="110" x2="516" y2="110" class="hp-arrow" marker-end="url(#hpArrGrayC)"></line>
+  <text x="420" y="102" text-anchor="middle" class="hp-t-sub">buildProviderContext() → streamFn(model, ctx)</text>
+  <line x1="520" y1="130" x2="324" y2="130" class="hp-blue-line" marker-end="url(#hpArrGrayC)"></line>
+  <text x="420" y="146" text-anchor="middle" class="hp-blue-text">text_delta / toolcall_delta ... (流式)</text>
+  <rect x="270" y="156" width="100" height="24" rx="4" class="hp-node-accent"></rect>
+  <text x="320" y="172" text-anchor="middle" class="hp-t-accent-xs">emit message_update ×N</text>
+  <line x1="520" y1="192" x2="324" y2="192" class="hp-blue-line" marker-end="url(#hpArrGrayC)"></line>
+  <text x="420" y="208" text-anchor="middle" class="hp-blue-text">done → finalMessage (含 toolCall)</text>
+  <rect x="270" y="218" width="100" height="24" rx="4" class="hp-node-accent"></rect>
+  <text x="320" y="234" text-anchor="middle" class="hp-t-accent-xs">emit message_end</text>
+  <rect x="230" y="254" width="180" height="30" rx="6" class="hp-node"></rect>
+  <text x="320" y="273" text-anchor="middle" class="hp-t-title-sm">解析出 toolCall: read(path)</text>
+  <line x1="320" y1="284" x2="696" y2="284" class="hp-arrow" marker-end="url(#hpArrGrayC)"></line>
+  <text x="500" y="276" text-anchor="middle" class="hp-t-sub">prepareToolCall() → tool.execute(id, args, signal)</text>
+  <rect x="640" y="296" width="110" height="24" rx="4" class="hp-node-warn"></rect>
+  <text x="695" y="312" text-anchor="middle" class="hp-warn-text-xs">读文件 / 跑命令</text>
+  <line x1="700" y1="336" x2="324" y2="336" class="hp-warn-line" marker-end="url(#hpArrGrayC)"></line>
+  <text x="510" y="328" text-anchor="middle" class="hp-warn-text">ToolResult { content, isError }</text>
+  <rect x="240" y="348" width="170" height="24" rx="4" class="hp-node-accent"></rect>
+  <text x="320" y="364" text-anchor="middle" class="hp-t-accent-xs">emit tool_execution_end → createToolResultMessage</text>
+  <line x1="320" y1="384" x2="516" y2="384" class="hp-arrow-dashed" marker-end="url(#hpArrGrayC)"></line>
+  <text x="420" y="376" text-anchor="middle" class="hp-t-sub">带着 toolResult 再次进入 streamAssistantResponse()</text>
+  <line x1="520" y1="404" x2="324" y2="404" class="hp-blue-line" marker-end="url(#hpArrGrayC)"></line>
+  <text x="420" y="420" text-anchor="middle" class="hp-blue-text">这次没有 toolCall，纯文本回答</text>
+  <line x1="320" y1="432" x2="124" y2="432" class="hp-arrow" marker-end="url(#hpArrGrayC)"></line>
+  <text x="220" y="424" text-anchor="middle" class="hp-t-sub">agent_end，返回最终 AgentMessage[]</text>
+  <circle cx="120" cy="432" r="4" class="hp-dot"></circle>
+</svg>
+</div>
+<p><em>虚线处正是状态机里”hasMoreToolCalls=true → 回到 turn_start”的那条回边</em></p>
+<h2 id="源码逐段拆解"><a href="#源码逐段拆解">源码逐段拆解</a><a href="#源码逐段拆解" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="源码逐段拆解"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>以下摘自 <a href="https://github.com/badlogic/pi-mono/blob/main/packages/agent/src/agent-loop.ts" target="_blank" rel="noopener">packages/agent/src/agent-loop.ts</a>（MIT 协议，节选核心逻辑，省略部分类型定义）。对照着上面两张图看。</p>
+<h3 id="41-循环的入口runloop"><a href="#41-循环的入口runloop">4.1 循环的入口：runLoop()</a><a href="#41-循环的入口runloop" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="41-循环的入口runloop"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="typescript"><code><span class="line" data-line="1"><span style="color:#D73A49;--shiki-dark:#F97583">async</span><span style="color:#D73A49;--shiki-dark:#F97583"> function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> runLoop</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line" data-line="2"><span style="color:#E36209;--shiki-dark:#FFAB70">  initialContext</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AgentContext</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="3"><span style="color:#E36209;--shiki-dark:#FFAB70">  newMessages</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AgentMessage</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[],</span></span>
+<span class="line" data-line="4"><span style="color:#E36209;--shiki-dark:#FFAB70">  initialConfig</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AgentLoopConfig</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="5"><span style="color:#E36209;--shiki-dark:#FFAB70">  signal</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AbortSignal</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> undefined</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="6"><span style="color:#E36209;--shiki-dark:#FFAB70">  emit</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AgentEventSink</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="7"><span style="color:#E36209;--shiki-dark:#FFAB70">  streamFunction</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> StreamFn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="8"><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Promise</span><span style="color:#24292E;--shiki-dark:#E1E4E8">&#x3C;</span><span style="color:#005CC5;--shiki-dark:#79B8FF">void</span><span style="color:#24292E;--shiki-dark:#E1E4E8">> {</span></span>
+<span class="line" data-line="9"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> currentContext </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> initialContext;</span></span>
+<span class="line" data-line="10"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> initialConfig;</span></span>
+<span class="line" data-line="11"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> firstTurn </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line" data-line="12"></span>
+<span class="line" data-line="13"><span style="color:#6A737D;--shiki-dark:#6A737D">  // 开始前先看看用户是不是在等待时又打了字（"打断"用的消息队列）</span></span>
+<span class="line" data-line="14"><span style="color:#D73A49;--shiki-dark:#F97583">  let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> pendingMessages </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">await</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getSteeringMessages</span><span style="color:#24292E;--shiki-dark:#E1E4E8">?.()) </span><span style="color:#D73A49;--shiki-dark:#F97583">||</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [];</span></span>
+<span class="line" data-line="15"></span>
+<span class="line" data-line="16"><span style="color:#6A737D;--shiki-dark:#6A737D">  // 外层循环：agent 已经想停下了，但如果有排队的新消息，就continue</span></span>
+<span class="line" data-line="17"><span style="color:#D73A49;--shiki-dark:#F97583">  while</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="18"><span style="color:#D73A49;--shiki-dark:#F97583">    let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> hasMoreToolCalls </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line" data-line="19"></span>
+<span class="line" data-line="20"><span style="color:#6A737D;--shiki-dark:#6A737D">    // 内层循环：只要还有工具调用没跑完，就继续转</span></span>
+<span class="line" data-line="21"><span style="color:#D73A49;--shiki-dark:#F97583">    while</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (hasMoreToolCalls </span><span style="color:#D73A49;--shiki-dark:#F97583">||</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> pendingMessages.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#D73A49;--shiki-dark:#F97583"> ></span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="22"><span style="color:#D73A49;--shiki-dark:#F97583">      if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8">firstTurn) { </span><span style="color:#D73A49;--shiki-dark:#F97583">await</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> emit</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"turn_start"</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }); }</span></span>
+<span class="line" data-line="23"><span style="color:#D73A49;--shiki-dark:#F97583">      else</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { firstTurn </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; }</span></span>
+<span class="line" data-line="24"></span>
+<span class="line" data-line="25"><span style="color:#6A737D;--shiki-dark:#6A737D">      // 把排队消息插入历史，再进入下一轮 assistant 响应</span></span>
+<span class="line" data-line="26"><span style="color:#D73A49;--shiki-dark:#F97583">      if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (pendingMessages.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#D73A49;--shiki-dark:#F97583"> ></span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="27"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> message</span><span style="color:#D73A49;--shiki-dark:#F97583"> of</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> pendingMessages) {</span></span>
+<span class="line" data-line="28"><span style="color:#24292E;--shiki-dark:#E1E4E8">          currentContext.messages.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">push</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(message);</span></span>
+<span class="line" data-line="29"><span style="color:#24292E;--shiki-dark:#E1E4E8">          newMessages.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">push</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(message);</span></span>
+<span class="line" data-line="30"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line" data-line="31"><span style="color:#24292E;--shiki-dark:#E1E4E8">        pendingMessages </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [];</span></span>
+<span class="line" data-line="32"><span style="color:#24292E;--shiki-dark:#E1E4E8">      }</span></span>
+<span class="line" data-line="33"></span>
+<span class="line" data-line="34"><span style="color:#6A737D;--shiki-dark:#6A737D">      // 核心一步：调 LLM，流式拿回一条 assistant 消息</span></span>
+<span class="line" data-line="35"><span style="color:#D73A49;--shiki-dark:#F97583">      const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> message</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> await</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> streamAssistantResponse</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line" data-line="36"><span style="color:#24292E;--shiki-dark:#E1E4E8">        currentContext, config, signal, emit, streamFunction</span></span>
+<span class="line" data-line="37"><span style="color:#24292E;--shiki-dark:#E1E4E8">      );</span></span>
+<span class="line" data-line="38"><span style="color:#24292E;--shiki-dark:#E1E4E8">      newMessages.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">push</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(message);</span></span>
+<span class="line" data-line="39"></span>
+<span class="line" data-line="40"><span style="color:#D73A49;--shiki-dark:#F97583">      if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (message.stopReason </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "error"</span><span style="color:#D73A49;--shiki-dark:#F97583"> ||</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> message.stopReason </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "aborted"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="41"><span style="color:#D73A49;--shiki-dark:#F97583">        await</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> emit</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"agent_end"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, messages: newMessages });</span></span>
+<span class="line" data-line="42"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; </span><span style="color:#6A737D;--shiki-dark:#6A737D">// 唯一的异常出口</span></span>
+<span class="line" data-line="43"><span style="color:#24292E;--shiki-dark:#E1E4E8">      }</span></span>
+<span class="line" data-line="44"></span>
+<span class="line" data-line="45"><span style="color:#D73A49;--shiki-dark:#F97583">      const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> toolCalls</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> message.content.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">c</span><span style="color:#D73A49;--shiki-dark:#F97583"> =></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> c.type </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "toolCall"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line" data-line="46"><span style="color:#D73A49;--shiki-dark:#F97583">      let</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> toolResults</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> ToolResultMessage</span><span style="color:#24292E;--shiki-dark:#E1E4E8">[] </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [];</span></span>
+<span class="line" data-line="47"><span style="color:#24292E;--shiki-dark:#E1E4E8">      hasMoreToolCalls </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> false</span><span style="color:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line" data-line="48"></span>
+<span class="line" data-line="49"><span style="color:#D73A49;--shiki-dark:#F97583">      if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (toolCalls.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#D73A49;--shiki-dark:#F97583"> ></span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="50"><span style="color:#6A737D;--shiki-dark:#6A737D">        // 执行工具，拿到结果，塞回消息历史</span></span>
+<span class="line" data-line="51"><span style="color:#D73A49;--shiki-dark:#F97583">        const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> batch</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> await</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> executeToolCalls</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(currentContext, message, config, signal, emit);</span></span>
+<span class="line" data-line="52"><span style="color:#24292E;--shiki-dark:#E1E4E8">        toolResults.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">push</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#D73A49;--shiki-dark:#F97583">...</span><span style="color:#24292E;--shiki-dark:#E1E4E8">batch.messages);</span></span>
+<span class="line" data-line="53"><span style="color:#24292E;--shiki-dark:#E1E4E8">        hasMoreToolCalls </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#D73A49;--shiki-dark:#F97583"> !</span><span style="color:#24292E;--shiki-dark:#E1E4E8">batch.terminate;</span></span>
+<span class="line" data-line="54"><span style="color:#D73A49;--shiki-dark:#F97583">        for</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> r</span><span style="color:#D73A49;--shiki-dark:#F97583"> of</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> toolResults) {</span></span>
+<span class="line" data-line="55"><span style="color:#24292E;--shiki-dark:#E1E4E8">          currentContext.messages.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">push</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(r);</span></span>
+<span class="line" data-line="56"><span style="color:#24292E;--shiki-dark:#E1E4E8">          newMessages.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">push</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(r);</span></span>
+<span class="line" data-line="57"><span style="color:#24292E;--shiki-dark:#E1E4E8">        }</span></span>
+<span class="line" data-line="58"><span style="color:#24292E;--shiki-dark:#E1E4E8">      }</span></span>
+<span class="line" data-line="59"></span>
+<span class="line" data-line="60"><span style="color:#6A737D;--shiki-dark:#6A737D">      // 业务层可以在这里插手：换模型、改 context、决定要不要停</span></span>
+<span class="line" data-line="61"><span style="color:#D73A49;--shiki-dark:#F97583">      const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> snapshot</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> await</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">prepareNextTurn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">?.({ message, toolResults, context: currentContext, newMessages });</span></span>
+<span class="line" data-line="62"><span style="color:#D73A49;--shiki-dark:#F97583">      if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (snapshot) { </span><span style="color:#6A737D;--shiki-dark:#6A737D">/* 应用 snapshot 覆盖 context/model */</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> }</span></span>
+<span class="line" data-line="63"></span>
+<span class="line" data-line="64"><span style="color:#D73A49;--shiki-dark:#F97583">      if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">await</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">shouldStopAfterTurn</span><span style="color:#24292E;--shiki-dark:#E1E4E8">?.({ message, toolResults, context: currentContext, newMessages })) {</span></span>
+<span class="line" data-line="65"><span style="color:#D73A49;--shiki-dark:#F97583">        await</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> emit</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"agent_end"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, messages: newMessages });</span></span>
+<span class="line" data-line="66"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; </span><span style="color:#6A737D;--shiki-dark:#6A737D">// 唯一的正常出口</span></span>
+<span class="line" data-line="67"><span style="color:#24292E;--shiki-dark:#E1E4E8">      }</span></span>
+<span class="line" data-line="68"></span>
+<span class="line" data-line="69"><span style="color:#24292E;--shiki-dark:#E1E4E8">      pendingMessages </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">await</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getSteeringMessages</span><span style="color:#24292E;--shiki-dark:#E1E4E8">?.()) </span><span style="color:#D73A49;--shiki-dark:#F97583">||</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [];</span></span>
+<span class="line" data-line="70"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line" data-line="71"></span>
+<span class="line" data-line="72"><span style="color:#6A737D;--shiki-dark:#6A737D">    // 内层循环退出了（agent 想停）—— 看看有没有排队的 followUp</span></span>
+<span class="line" data-line="73"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> followUpMessages</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">await</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">getFollowUpMessages</span><span style="color:#24292E;--shiki-dark:#E1E4E8">?.()) </span><span style="color:#D73A49;--shiki-dark:#F97583">||</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [];</span></span>
+<span class="line" data-line="74"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (followUpMessages.</span><span style="color:#005CC5;--shiki-dark:#79B8FF">length</span><span style="color:#D73A49;--shiki-dark:#F97583"> ></span><span style="color:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="75"><span style="color:#24292E;--shiki-dark:#E1E4E8">      pendingMessages </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> followUpMessages;</span></span>
+<span class="line" data-line="76"><span style="color:#D73A49;--shiki-dark:#F97583">      continue</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; </span><span style="color:#6A737D;--shiki-dark:#6A737D">// 回到外层 while(true)，等价于回到 turn_start</span></span>
+<span class="line" data-line="77"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line" data-line="78"><span style="color:#D73A49;--shiki-dark:#F97583">    break</span><span style="color:#24292E;--shiki-dark:#E1E4E8">; </span><span style="color:#6A737D;--shiki-dark:#6A737D">// 彻底没事干了，跳出外层</span></span>
+<span class="line" data-line="79"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line" data-line="80"><span style="color:#D73A49;--shiki-dark:#F97583">  await</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> emit</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"agent_end"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, messages: newMessages });</span></span>
+<span class="line" data-line="81"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre></div>
+<blockquote>
+<p><strong>对应状态机</strong>：这一整个函数就是上面那张状态机图。<code>hasMoreToolCalls</code> 驱动内层循环（橙色回边），<code>followUpMessages</code> 驱动外层循环（绿色虚线回边）。</p>
+<p><strong>两个出口</strong>：全函数只有两处 <code>return</code>：LLM 报错/被中断，或者 <code>shouldStopAfterTurn</code> 说”够了”。没有 hardcode 的最大步数——最大步数是调用方通过这个回调自己实现的。</p>
+</blockquote>
+<h3 id="42-工具怎么被翻译成真正的调用preparetoolcall"><a href="#42-工具怎么被翻译成真正的调用preparetoolcall">4.2 工具怎么被”翻译”成真正的调用：prepareToolCall()</a><a href="#42-工具怎么被翻译成真正的调用preparetoolcall" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="42-工具怎么被翻译成真正的调用preparetoolcall"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="typescript"><code><span class="line" data-line="1"><span style="color:#D73A49;--shiki-dark:#F97583">async</span><span style="color:#D73A49;--shiki-dark:#F97583"> function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> prepareToolCall</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line" data-line="2"><span style="color:#E36209;--shiki-dark:#FFAB70">  currentContext</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AgentContext</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="3"><span style="color:#E36209;--shiki-dark:#FFAB70">  assistantMessage</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AssistantMessage</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="4"><span style="color:#E36209;--shiki-dark:#FFAB70">  toolCall</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AgentToolCall</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="5"><span style="color:#E36209;--shiki-dark:#FFAB70">  config</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AgentLoopConfig</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="6"><span style="color:#E36209;--shiki-dark:#FFAB70">  signal</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> AbortSignal</span><span style="color:#D73A49;--shiki-dark:#F97583"> |</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> undefined</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="7"><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="8"><span style="color:#6A737D;--shiki-dark:#6A737D">  // 1. 按 name 在已注册工具表里查（本质就是个 dispatch table）</span></span>
+<span class="line" data-line="9"><span style="color:#D73A49;--shiki-dark:#F97583">  const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> tool</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> currentContext.tools?.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">find</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">t</span><span style="color:#D73A49;--shiki-dark:#F97583"> =></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t.name </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> toolCall.name);</span></span>
+<span class="line" data-line="10"><span style="color:#D73A49;--shiki-dark:#F97583">  if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="color:#D73A49;--shiki-dark:#F97583">!</span><span style="color:#24292E;--shiki-dark:#E1E4E8">tool) {</span></span>
+<span class="line" data-line="11"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { kind: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"immediate"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, result: </span><span style="color:#6F42C1;--shiki-dark:#B392F0">createErrorToolResult</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">`Tool ${</span><span style="color:#24292E;--shiki-dark:#E1E4E8">toolCall</span><span style="color:#032F62;--shiki-dark:#9ECBFF">.</span><span style="color:#24292E;--shiki-dark:#E1E4E8">name</span><span style="color:#032F62;--shiki-dark:#9ECBFF">} not found`</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), isError: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> };</span></span>
+<span class="line" data-line="12"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line" data-line="13"></span>
+<span class="line" data-line="14"><span style="color:#6A737D;--shiki-dark:#6A737D">  // 2. 校验 LLM 给的参数是否符合这个工具的 JSON Schema</span></span>
+<span class="line" data-line="15"><span style="color:#D73A49;--shiki-dark:#F97583">  const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> validatedArgs</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> validateToolArguments</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(tool, toolCall);</span></span>
+<span class="line" data-line="16"></span>
+<span class="line" data-line="17"><span style="color:#6A737D;--shiki-dark:#6A737D">  // 3. 执行前钩子：业务层可以在这里拦截/拒绝一次工具调用</span></span>
+<span class="line" data-line="18"><span style="color:#D73A49;--shiki-dark:#F97583">  if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (config.beforeToolCall) {</span></span>
+<span class="line" data-line="19"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> beforeResult</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#D73A49;--shiki-dark:#F97583"> await</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> config.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">beforeToolCall</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({ assistantMessage, toolCall, args: validatedArgs, context: currentContext }, signal);</span></span>
+<span class="line" data-line="20"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (beforeResult?.block) {</span></span>
+<span class="line" data-line="21"><span style="color:#D73A49;--shiki-dark:#F97583">      return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { kind: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"immediate"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, result: </span><span style="color:#6F42C1;--shiki-dark:#B392F0">createErrorToolResult</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(beforeResult.reason </span><span style="color:#D73A49;--shiki-dark:#F97583">||</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "blocked"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), isError: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> };</span></span>
+<span class="line" data-line="22"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line" data-line="23"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line" data-line="24"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { kind: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">"prepared"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, toolCall, tool, args: validatedArgs };</span></span>
+<span class="line" data-line="25"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre></div>
+<p>这段代码回答了”工具调用本质是什么”——就是<strong>按名字在一张表里查函数指针，校验参数，然后执行</strong>，跟用 C++ 写的 <code>std::unordered_map&#x3C;string, std::function&#x3C;...>></code> 没有本质区别。<code>beforeToolCall</code> 这个钩子就是安全护栏挂载点——比如”危险命令要用户确认”就是在这里实现的。</p>
+<h3 id="43-并行-vs-串行执行"><a href="#43-并行-vs-串行执行">4.3 并行 vs 串行执行</a><a href="#43-并行-vs-串行执行" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="43-并行-vs-串行执行"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>Pi 默认<strong>并行</strong>执行同一轮里的多个工具调用（<code>executeToolCallsParallel</code>，用 <code>Promise.all</code>），但只要有一个工具声明了 <code>executionMode === "sequential"</code>，这一批就整体退化为串行：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="typescript"><code><span class="line" data-line="1"><span style="color:#D73A49;--shiki-dark:#F97583">async</span><span style="color:#D73A49;--shiki-dark:#F97583"> function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> executeToolCalls</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">currentContext</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">assistantMessage</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">config</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">signal</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">emit</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="2"><span style="color:#D73A49;--shiki-dark:#F97583">  const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> toolCalls</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> assistantMessage.content.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">c</span><span style="color:#D73A49;--shiki-dark:#F97583"> =></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> c.type </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "toolCall"</span><span style="color:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line" data-line="3"></span>
+<span class="line" data-line="4"><span style="color:#6A737D;--shiki-dark:#6A737D">  // 只要有一个工具要求串行（比如写文件、改状态），整批就退化为串行</span></span>
+<span class="line" data-line="5"><span style="color:#D73A49;--shiki-dark:#F97583">  const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> hasSequentialToolCall</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> toolCalls.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">some</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line" data-line="6"><span style="color:#E36209;--shiki-dark:#FFAB70">    tc</span><span style="color:#D73A49;--shiki-dark:#F97583"> =></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> currentContext.tools?.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">find</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">t</span><span style="color:#D73A49;--shiki-dark:#F97583"> =></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> t.name </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> tc.name)?.executionMode </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "sequential"</span></span>
+<span class="line" data-line="7"><span style="color:#24292E;--shiki-dark:#E1E4E8">  );</span></span>
+<span class="line" data-line="8"></span>
+<span class="line" data-line="9"><span style="color:#D73A49;--shiki-dark:#F97583">  if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> (config.toolExecution </span><span style="color:#D73A49;--shiki-dark:#F97583">===</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> "sequential"</span><span style="color:#D73A49;--shiki-dark:#F97583"> ||</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> hasSequentialToolCall) {</span></span>
+<span class="line" data-line="10"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> executeToolCallsSequential</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(currentContext, assistantMessage, toolCalls, config, signal, emit);</span></span>
+<span class="line" data-line="11"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }</span></span>
+<span class="line" data-line="12"><span style="color:#D73A49;--shiki-dark:#F97583">  return</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> executeToolCallsParallel</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(currentContext, assistantMessage, toolCalls, config, signal, emit);</span></span>
+<span class="line" data-line="13"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre></div>
+<p>这是个面试可以直接拿来用的知识点：<strong>agent 并发执行工具会有副作用冲突的风险</strong>（比如两个工具同时写同一个文件），Pi 的解法是”工具自己声明能不能并行”，而不是框架层强行加锁——设计权衡交给使用者。</p>
+<h2 id="三个值得记住的设计决策"><a href="#三个值得记住的设计决策">三个值得记住的设计决策</a><a href="#三个值得记住的设计决策" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="三个值得记住的设计决策"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>决策</th><th>解决的问题</th><th>代码位置</th></tr></thead><tbody><tr><td><strong>Steering Queue</strong>（打断队列）</td><td>用户在 agent 还没吐完这一轮回答时又发了新消息（“等等，先别删”）——不能粗暴打断流式输出，得在下一个安全点插入</td><td><code>getSteeringMessages()</code>，每次内层循环开始前检查一次</td></tr><tr><td><strong>Follow-up Queue</strong>（续接队列）</td><td>agent 已经决定”这轮结束了”，但用户此时又发来新消息——不应该开一个全新的 agent_start，而是无缝续在同一次运行里</td><td><code>getFollowUpMessages()</code>，只在内层循环耗尽后检查</td></tr><tr><td><strong>截断保护</strong>（stopReason === “length”）</td><td>如果 LLM 输出被 token 上限截断，工具调用的参数可能是不完整的 JSON——直接执行有风险（比如一半的 rm 命令），所以整批直接判失败，让模型重新发</td><td><code>failToolCallsFromTruncatedMessage()</code></td></tr></tbody></table></div>
+<blockquote>
+<p><strong>注意</strong>：这三点是”工程壳”的例子——对应”agent = 循环 + 状态 + 工具”的内核，Steering/Follow-up/截断保护都不改变内核逻辑，它们是把一个”能跑的 demo”打磨成”能在真实交互里不崩”的产品所必须补的边界情况。这正是 LangGraph 这类框架要解决的同一类问题（可中断、可恢复），只是 Pi 用一个更轻的方式（几个队列 + 回调）实现，而不是显式状态图。</p>
+</blockquote>
+<h2 id="和已经会的-react-loop-对比一下"><a href="#和已经会的-react-loop-对比一下">和已经会的 ReAct loop 对比一下</a><a href="#和已经会的-react-loop-对比一下" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="和已经会的-react-loop-对比一下"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>确认一下理解闭环了没有——把 Pi 的真实代码压缩回最初那个”想→做→看结果→再想”的伪代码，是这样的对应关系：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="python"><code><span class="line" data-line="1"><span style="color:#24292E;--shiki-dark:#E1E4E8">state </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [user_prompt]</span></span>
+<span class="line" data-line="2"><span style="color:#D73A49;--shiki-dark:#F97583">while</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> True</span><span style="color:#24292E;--shiki-dark:#E1E4E8">:</span></span>
+<span class="line" data-line="3"><span style="color:#24292E;--shiki-dark:#E1E4E8">    response </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> llm(state)              </span><span style="color:#6A737D;--shiki-dark:#6A737D"># ↔ streamAssistantResponse()</span></span>
+<span class="line" data-line="4"><span style="color:#D73A49;--shiki-dark:#F97583">    if</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> response.is_final_answer:       </span><span style="color:#6A737D;--shiki-dark:#6A737D"># ↔ toolCalls.length === 0</span></span>
+<span class="line" data-line="5"><span style="color:#D73A49;--shiki-dark:#F97583">        return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> response</span></span>
+<span class="line" data-line="6"><span style="color:#24292E;--shiki-dark:#E1E4E8">    action </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> parse_action(response)    </span><span style="color:#6A737D;--shiki-dark:#6A737D"># ↔ message.content.filter(toolCall)</span></span>
+<span class="line" data-line="7"><span style="color:#24292E;--shiki-dark:#E1E4E8">    result </span><span style="color:#D73A49;--shiki-dark:#F97583">=</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> dispatch(action)          </span><span style="color:#6A737D;--shiki-dark:#6A737D"># ↔ prepareToolCall() + tool.execute()</span></span>
+<span class="line" data-line="8"><span style="color:#24292E;--shiki-dark:#E1E4E8">    state.append(action, result)       </span><span style="color:#6A737D;--shiki-dark:#6A737D"># ↔ currentContext.messages.push(...)</span></span>
+<span class="line" data-line="9"><span style="color:#6A737D;--shiki-dark:#6A737D">                                        # 循环 ↔ hasMoreToolCalls = true，回到 while 顶部</span></span></code></pre></div>
+<p>Pi 的 805 行代码，去掉事件流(EventStream)、打断队列、续接队列、并行执行、截断保护这些”工程壳”，内核就是这 7 行。<strong>这也是为什么不需要把 805 行都读完</strong>——要抓的是这 7 行对应的骨架，剩下的都是”怎么让这 7 行在真实世界里不崩”的工程细节，跟 LangGraph 解决的问题是同一类，只是实现方式不同（显式状态图 vs 命令式循环+回调）。</p>
+<hr>
+<p>源码：<a href="https://github.com/badlogic/pi-mono" target="_blank" rel="noopener">github.com/badlogic/pi-mono</a> · 作者 Mario Zechner · MIT License</p>
+<p>深入阅读：<a href="https://deepwiki.com/badlogic/pi-mono" target="_blank" rel="noopener">DeepWiki 自动生成的架构文档</a> · <a href="https://github.com/cellinlab/how-pi-agent-works" target="_blank" rel="noopener">中文渐进式教学 Demo (cellinlab/how-pi-agent-works)</a></p>
+<style>
+  .hp.hp-diagram {
+    --hp-red: #D64545;
+    --hp-orange: #D9822B;
+    --hp-blue: #3B6FE0;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-radius-lg);
+    padding: 1.25rem;
+    margin: 1.25rem 0 1.75rem;
+    overflow-x: auto;
+  }
+  .dark .hp.hp-diagram {
+    background: var(--theme-surface-elevated);
+  }
+  .hp.hp-diagram svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+    min-width: 480px;
+  }
+  .hp.hp-diagram svg text {
+    font-family: ui-monospace, monospace;
+  }
+
+  .hp.hp-diagram .hp-node {
+    fill: var(--theme-surface);
+    stroke: var(--theme-border);
+    stroke-width: 1.5;
+  }
+  .hp.hp-diagram .hp-node-accent {
+    fill: color-mix(in srgb, var(--theme-accent) 10%, var(--theme-surface));
+    stroke: var(--theme-accent);
+    stroke-width: 1.5;
+  }
+  .hp.hp-diagram .hp-node-accent-outline {
+    fill: var(--theme-surface);
+    stroke: var(--theme-accent);
+    stroke-width: 1.5;
+  }
+  .hp.hp-diagram .hp-pill-accent {
+    fill: var(--theme-accent);
+  }
+  .hp.hp-diagram .hp-node-danger {
+    fill: color-mix(in srgb, var(--hp-red) 12%, var(--theme-surface));
+    stroke: color-mix(in srgb, var(--hp-red) 55%, var(--theme-border));
+    stroke-width: 1.5;
+  }
+  .hp.hp-diagram .hp-node-warn {
+    fill: color-mix(in srgb, var(--hp-orange) 12%, var(--theme-surface));
+    stroke: color-mix(in srgb, var(--hp-orange) 55%, var(--theme-border));
+    stroke-width: 1.5;
+  }
+
+  .hp.hp-diagram .hp-t-title {
+    fill: var(--theme-fg);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-t-title-sm {
+    fill: var(--theme-fg);
+    font-size: 11px;
+  }
+  .hp.hp-diagram .hp-t-sub {
+    fill: var(--theme-muted);
+    font-size: 10.5px;
+  }
+  .hp.hp-diagram .hp-t-sub-xs {
+    fill: var(--theme-muted);
+    font-size: 10.5px;
+  }
+  .hp.hp-diagram .hp-t-accent {
+    fill: var(--theme-accent);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-t-accent-sub {
+    fill: color-mix(in srgb, var(--theme-accent) 65%, var(--theme-fg));
+    font-size: 11px;
+  }
+  .hp.hp-diagram .hp-t-accent-sm {
+    fill: var(--theme-accent);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-t-accent-xs {
+    fill: var(--theme-accent);
+    font-size: 9.5px;
+    font-weight: 600;
+  }
+  .hp.hp-diagram .hp-t-oncontrast {
+    fill: var(--theme-bg);
+    font-size: 12.5px;
+    font-weight: 700;
+  }
+
+  .hp.hp-diagram .hp-danger-text {
+    fill: color-mix(in srgb, var(--hp-red) 72%, var(--theme-fg));
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-danger-text-sm {
+    fill: color-mix(in srgb, var(--hp-red) 72%, var(--theme-fg));
+    font-size: 10.5px;
+  }
+  .hp.hp-diagram .hp-danger-line {
+    stroke: color-mix(in srgb, var(--hp-red) 65%, var(--theme-fg));
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  .hp.hp-diagram .hp-warn-text {
+    fill: color-mix(in srgb, var(--hp-orange) 75%, var(--theme-fg));
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-warn-text-sub {
+    fill: color-mix(in srgb, var(--hp-orange) 55%, var(--theme-fg));
+    font-size: 10px;
+  }
+  .hp.hp-diagram .hp-warn-text-sm {
+    fill: color-mix(in srgb, var(--hp-orange) 72%, var(--theme-fg));
+    font-size: 10px;
+  }
+  .hp.hp-diagram .hp-warn-text-xs {
+    fill: color-mix(in srgb, var(--hp-orange) 75%, var(--theme-fg));
+    font-size: 9.5px;
+  }
+  .hp.hp-diagram .hp-warn-line {
+    stroke: color-mix(in srgb, var(--hp-orange) 65%, var(--theme-fg));
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  .hp.hp-diagram .hp-blue-text {
+    fill: color-mix(in srgb, var(--hp-blue) 70%, var(--theme-fg));
+    font-size: 10.5px;
+  }
+  .hp.hp-diagram .hp-blue-line {
+    stroke: color-mix(in srgb, var(--hp-blue) 60%, var(--theme-fg));
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  .hp.hp-diagram .hp-arrow {
+    stroke: var(--theme-muted);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .hp.hp-diagram .hp-arrow-dashed {
+    stroke: var(--theme-muted);
+    stroke-width: 1.5;
+    fill: none;
+    stroke-dasharray: 4 3;
+  }
+  .hp.hp-diagram .hp-accent-line-dashed {
+    stroke: var(--theme-accent);
+    stroke-width: 1.5;
+    fill: none;
+    stroke-dasharray: 4 3;
+  }
+  .hp.hp-diagram .hp-lane-line {
+    stroke: var(--theme-border);
+  }
+  .hp.hp-diagram .hp-dot {
+    fill: var(--theme-fg);
+  }
+  .hp.hp-diagram .hp-arrow-head {
+    fill: var(--theme-muted);
+  }
+  .hp.hp-diagram .hp-arrow-head-accent {
+    fill: var(--theme-accent);
+  }
+
+  @media (max-width: 640px) {
+    .hp.hp-diagram {
+      padding: 0.9rem;
+    }
+  }
+</style> </div> </div> <div data-reward-root class="reward-container relative"> <button class="reward-like-btn" data-reward-like data-article-id="300b1312ad42893c" data-server-url="https://api.wqlblog.cn" aria-label="Like this post" title="Like"> <svg class="reward-like-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M7 10v12"></path> <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"></path> </svg> <span class="reward-like-count">—</span> </button> <p class="reward-line">
+如果这篇对你有帮助，可以
+<span class="reward-trigger inline-block" data-reward-open role="status" aria-expanded="false">请我喝杯咖啡</span> </p> <p class="reward-license">
+本文采用
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer license" class="no-underline">CC BY-NC-SA 4.0</a>
+协议，转载请注明出处
+</p> <div class="reward-popover invisible absolute left-0 right-0 mx-auto bottom-full mb-3 w-[500px] max-w-[90vw] pointer-events-none z-[9999]" data-reward-popover aria-hidden="true"> <div class="rounded-2xl p-4" style="border: 1px solid var(--theme-border); background: var(--theme-surface-elevated); box-shadow: var(--theme-shadow-md)"> <img src="/img/donate.png" alt="Donation QR code" class="mx-auto w-full h-auto rounded-lg"> <p class="text-center text-sm mt-2" style="color: var(--theme-muted)">Thank you for your support!</p> </div> </div> </div> <script type="module">function r(){document.querySelectorAll("[data-reward-root]").forEach(t=>{if(!(t instanceof HTMLElement)||t.dataset.rewardInitialized==="1")return;const a=t.querySelector("[data-reward-open]"),e=t.querySelector("[data-reward-popover]");if(a&&e instanceof HTMLElement){let n;const d=()=>{clearTimeout(n),e.classList.add("reward-popover-open"),e.setAttribute("aria-hidden","false"),a.setAttribute("aria-expanded","true")},o=()=>{n=setTimeout(()=>{e.classList.remove("reward-popover-open"),e.setAttribute("aria-hidden","true"),a.setAttribute("aria-expanded","false")},100)};a.addEventListener("mouseenter",d),e.addEventListener("mouseenter",d),a.addEventListener("mouseleave",o),e.addEventListener("mouseleave",o),t.dataset.rewardInitialized="1"}})}r();document.addEventListener("astro:page-load",r);document.addEventListener("astro:after-swap",r);</script> <!-- 上一篇 / 下一篇 --><nav class="article-post-nav"> <a href="/posts/量化金融中的因子评价指标：IC、Rank_IC、ICIR_等/" class="post-nav-link post-nav-prev"> <span class="post-nav-label"> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+上一篇
+</span> <span class="post-nav-title">量化金融中的因子评价指标：IC、Rank IC、ICIR 等</span> </a> <a href="/posts/尝试在本地部署大模型：4×3090_跑_Qwen3.8-27B/" class="post-nav-link post-nav-next"> <span class="post-nav-label">
+下一篇
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg> </span> <span class="post-nav-title">尝试在本地部署大模型：4×3090 跑 Qwen3.8-27B</span> </a> </nav> <section class="related-posts-section"><h2 class="related-posts-title">延伸阅读</h2><div class="related-posts-list"><a class="related-post-row" href="/posts/DeepSeek_Harness_%E4%B8%8E_Cordis_%E5%86%85%E6%A0%B8%E5%89%96%E6%9E%90/"><span class="related-post-title">DeepSeek Harness 与 Cordis 内核剖析</span><span class="related-post-meta"><time datetime="2026-09-13T00:00:00.000Z"> Sep 13 </time></span></a><a class="related-post-row" href="/posts/%E5%B0%9D%E8%AF%95%E5%9C%A8%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2%E5%A4%A7%E6%A8%A1%E5%9E%8B%EF%BC%9A4%C3%973090_%E8%B7%91_Qwen3.8-27B/"><span class="related-post-title">尝试在本地部署大模型：4×3090 跑 Qwen3.8-27B</span><span class="related-post-meta"><time datetime="2026-09-05T00:00:00.000Z"> Sep 5 </time></span></a><a class="related-post-row" href="/posts/%E9%A9%AF%E6%9C%8D_Claude_Code%EF%BC%9A%E4%B8%83%E7%A7%8D%E5%BC%95%E5%AF%BC%E5%AE%83%E8%A1%8C%E4%B8%BA%E7%9A%84%E6%96%B9%E5%BC%8F/"><span class="related-post-title">驯服 Claude Code：七种引导它行为的方式</span><span class="related-post-meta"><time datetime="2026-07-02T00:00:00.000Z"> Jul 2 </time></span></a><a class="related-post-row" href="/posts/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E6%8A%80%E6%9C%AF%E8%AF%A6%E8%A7%A3%EF%BC%9AFull_Fine-tuning_%C2%B7_LoRA_%C2%B7_QLoRA/"><span class="related-post-title">大模型微调技术详解：Full Fine-tuning · LoRA · QLoRA</span><span class="related-post-meta"><time datetime="2026-05-26T00:00:00.000Z"> May 26 </time></span></a><a class="related-post-row" href="/posts/%E5%B7%A5%E6%97%B6%E8%AE%A1%E7%AE%97%E5%99%A8%EF%BC%9A%E5%9F%BA%E4%BA%8EFunction_Calling/"><span class="related-post-title">工时计算器：基于Function Calling</span><span class="related-post-meta"><time datetime="2026-05-13T00:00:00.000Z"> May 13 </time></span></a><a class="related-post-row" href="/posts/%E4%BB%8E_Prompt_Context_Harness_Engineering_%E7%9C%8B_Agent_%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/"><span class="related-post-title">从 Prompt/Context/Harness Engineering 看 Agent 系统设计</span><span class="related-post-meta"><time datetime="2026-05-05T00:00:00.000Z"> May 5 </time></span></a></div></section> <div id="comments-section" class="article-comments-section is-comments-loading"><div id="waline" data-comment-system="waline" data-waline-path="300b1312ad42893c"></div> <div class="waline-loading" aria-hidden="true"> <span class="waline-loading-spinner"></span> <span class="waline-loading-text">评论加载中…</span> </div> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@waline/client@v3/dist/waline.css"> <script>(function(){const walineOptions = {"el":"#waline","path":"300b1312ad42893c","serverURL":"https://api.wqlblog.cn","dark":"html.dark","requiredMeta":["nick","mail"],"emoji":["https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/bilibili/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/qq/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/tieba/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/weibo/"],"search":false,"lang":"zh","pageview":true};
+const allowedCommentDomains = [];
+const allowLocalInDev = false;
+const walineClientCDNBase = "https://cdn.jsdelivr.net/npm/@waline/client@v3/dist";
+
+    window.__walineConfig = { walineOptions, allowedCommentDomains, allowLocalInDev, walineClientCDNBase };
+})();</script> <script type="module" src="/_astro/Waline.astro_astro_type_script_index_0_lang.BDyriLpI.js"></script></div> </article> </main> </div> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				document.querySelectorAll('[data-edge-toggle]').forEach(function(btn) {
+					var side = btn.dataset.edgeToggle;
+					var c = !!s[side];
+					if (c) btn.classList.add('is-collapsed');
+				});
+			} catch(e) {}
+		})();
+		</script> <aside class="article-fab" aria-label="Article actions"> <button class="fab-btn" data-fab="top" aria-label="Back to top" title="Back to top"> <span class="fab-ring"></span> <svg class="fab-progress-ring" viewBox="0 0 38 38" aria-hidden="true"> <circle cx="19" cy="19" r="17"></circle> <circle class="fab-progress-fill" cx="19" cy="19" r="17"></circle> </svg> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 19V5M5 12l7-7 7 7"></path> </svg> </span> </button> <button class="fab-btn sidebar-dependent-hide" data-fab="drawer" aria-label="Table of contents" title="Table of contents" data-mobile-drawer-toggle aria-expanded="false" aria-controls="mobileDrawer"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 12h18M3 6h18M3 18h18"></path> </svg> </span> </button> <button class="fab-btn" data-comments-jump data-article-id="300b1312ad42893c" data-server-url="https://api.wqlblog.cn" aria-label="Comments" title="Comments"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path> </svg> <span class="fab-badge waline-comment-count" data-comments-count data-path="300b1312ad42893c">—</span> </span> </button> </aside> </div> <script type="module" src="/_astro/_...slug_.astro_astro_type_script_index_0_lang.D1pIFJ8_.js"></script>  </div> <footer class="container mt-8"> <div class="py-4 border-t theme-divider text-sm theme-muted"> <div class="text-center space-y-1 md:space-y-0 md:grid md:grid-cols-3 md:items-center"> <div class="md:text-left">Copyright © 2026</div> <div class="md:text-center"> <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--theme-fg)] transition-colors"> 黔ICP备2022002432号 </a> </div> <div class="md:text-right">Built with Astro.</div> </div> </div> </footer> <div id="waline-config" data-server-url="https://api.wqlblog.cn" hidden></div> <script type="module">function m(e){if(!e)return"";try{return new URL(e,window.location.href).href}catch{return e}}function y(e){return e.currentSrc||e.getAttribute("data-src")||e.getAttribute("src")||""}function g(e,t){const r=y(e);if(!r)return;const n=e.closest("picture")||e,o=n.parentElement;if(!o)return;if(o.tagName==="A"){const s=o,i=m(s.getAttribute("href")),l=m(r);!s.dataset.fancybox&&(!i||i===l)&&(s.setAttribute("href",r),s.dataset.fancybox=t),e.alt&&!s.dataset.caption&&(s.dataset.caption=e.alt),s.classList.add("previewable-link");return}const c=document.createElement("a");c.href=r,c.dataset.fancybox=t,c.dataset.caption=e.alt||"",c.className="previewable-link",o.insertBefore(c,n),c.appendChild(n)}function b(e,t,r){let a=r;e?.getCarousel?.()?.on("change",(n,o)=>{a=o}),e?.on?.("destroy",()=>{const n=t[a]??t[r];n instanceof HTMLElement&&setTimeout(()=>{n.scrollIntoView({block:"nearest",behavior:"instant"})},0)})}function h(){return{Hash:!1,hideScrollbar:!1,Thumbs:{autoStart:!0,showOnStart:"yes"},Toolbar:{display:{left:["infobar"],middle:["zoomIn","zoomOut","toggle1to1"],right:["slideshow","thumbs","close"]}},animated:!0,dragToClose:!0,keyboard:{Escape:"close",Delete:"close",Backspace:"close",PageUp:"next",PageDown:"prev",ArrowUp:"next",ArrowDown:"prev",ArrowRight:"next",ArrowLeft:"prev"},fitToView:!0,preload:3,infinite:!0,Panzoom:{maxScale:3,minScale:1},Carousel:{transition:"slide",preload:2}}}function d(){const e=window.Fancybox||window?.["@fancyapps/ui"]?.Fancybox;!e||typeof e.fromNodes!="function"||(document.querySelectorAll(".prose").forEach((t,r)=>{if(!(t instanceof HTMLElement))return;const a=`post-gallery-${r}`;t.dataset.previewGallery=a,t.querySelectorAll("img").forEach(n=>{n instanceof HTMLImageElement&&(n.classList.add("previewable-image"),g(n,a))})}),!document.__fancyboxClickBound&&(document.__fancyboxClickBound=!0,document.addEventListener("click",t=>{const a=(t.target instanceof Element?t.target:null)?.closest("a[data-fancybox], a[data-mermaid-gallery]");if(!(a instanceof HTMLAnchorElement))return;const n=a.closest(".prose");if(!(n instanceof HTMLElement))return;t.preventDefault(),t.stopPropagation();const o="mermaidGallery"in a.dataset,c=o?a.dataset.mermaidGallery:a.dataset.fancybox,s=o?`a[data-mermaid-gallery="${c}"]`:c?`a[data-fancybox="${c}"]`:"a[data-fancybox]",i=Array.from(n.querySelectorAll(s)).filter(p=>p instanceof HTMLAnchorElement),l=i.indexOf(a);if(i.length===0)return;const u=l>=0?l:0,f=e.fromNodes(i,{...h(),startIndex:u,triggerEl:a,placeFocusBack:!1});o&&setTimeout(()=>{(f??e.getInstance())?.getContainer?.()?.classList.add("is-mermaid-gallery")},0),b(f??e.getInstance(),i,u)},!0)))}d();window.addEventListener("load",d);document.addEventListener("astro:page-load",d);document.addEventListener("astro:after-swap",d);</script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_1_lang.DRxIS7cC.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_2_lang.CHCRmhs5.js"></script> <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.umd.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_3_lang.mMDGy5WK.js"></script> </body> </html>

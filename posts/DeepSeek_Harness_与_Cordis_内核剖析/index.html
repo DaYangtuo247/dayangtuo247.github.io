@@ -1,0 +1,1240 @@
+<!DOCTYPE html><html lang="zh-CN"> <head><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CDGfc0hd.js"></script> <!-- Global Metadata --> <meta charset="utf-8"> <meta name="viewport" content="width=device-width,initial-scale=1"> <link rel="icon" type="image/x-icon" href="/favicon.ico"> <!-- 字体 CDN（jsDelivr，全球 CDN 含中国节点） --> <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin> <!-- Waline 评论/统计后端：提前建连，减少评论区首个请求的握手延迟 --> <link rel="preconnect" href="https://api.wqlblog.cn" crossorigin> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-400.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-500.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-sc@5/chinese-simplified-700.css"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.css"> <meta name="generator" content="Astro v5.18.1"> <script>
+	(() => {
+		const MODE_KEY = 'theme-mode';
+		const root = document.documentElement;
+		const stored = localStorage.getItem(MODE_KEY) || localStorage.getItem('theme');
+		const mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+		const effective = mode === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : mode;
+
+		root.dataset.themeMode = mode;
+		root.classList.toggle('dark', effective === 'dark');
+		root.dataset.theme = effective;
+	})();
+</script> <!-- Canonical URL --> <link rel="canonical" href="https://www.wqlblog.cn/posts/DeepSeek_Harness_%E4%B8%8E_Cordis_%E5%86%85%E6%A0%B8%E5%89%96%E6%9E%90/"> <!-- Primary Meta Tags --> <title>DeepSeek Harness 与 Cordis 内核剖析 - KelrinWu&#39;s Blog</title> <meta name="title" content="DeepSeek Harness 与 Cordis 内核剖析 - KelrinWu's Blog"> <meta name="description" content="DeepSeek 开源 agent harness 的同一天，还建了一个论文仓库。这篇讲清楚三件事：dsh 长什么样、它底下那个 2693 行的 Cordis 内核给了它什么、以及《A Programming Paradigm for Spatiotemporal Composability》到底在解一个什么问题。"> <!-- Open Graph / Facebook --> <meta property="og:type" content="website"> <meta property="og:url" content="https://www.wqlblog.cn/posts/DeepSeek_Harness_%E4%B8%8E_Cordis_%E5%86%85%E6%A0%B8%E5%89%96%E6%9E%90/"> <meta property="og:title" content="DeepSeek Harness 与 Cordis 内核剖析"> <meta property="og:description" content="DeepSeek 开源 agent harness 的同一天，还建了一个论文仓库。这篇讲清楚三件事：dsh 长什么样、它底下那个 2693 行的 Cordis 内核给了它什么、以及《A Programming Paradigm for Spatiotemporal Composability》到底在解一个什么问题。"> <meta property="og:image" content="https://www.wqlblog.cn/favicon.ico"> <!-- Twitter --> <meta property="twitter:card" content="summary_large_image"> <meta property="twitter:url" content="https://www.wqlblog.cn/posts/DeepSeek_Harness_%E4%B8%8E_Cordis_%E5%86%85%E6%A0%B8%E5%89%96%E6%9E%90/"> <meta property="twitter:title" content="DeepSeek Harness 与 Cordis 内核剖析"> <meta property="twitter:description" content="DeepSeek 开源 agent harness 的同一天，还建了一个论文仓库。这篇讲清楚三件事：dsh 长什么样、它底下那个 2693 行的 Cordis 内核给了它什么、以及《A Programming Paradigm for Spatiotemporal Composability》到底在解一个什么问题。"> <meta property="twitter:image" content="https://www.wqlblog.cn/favicon.ico"><link rel="stylesheet" href="/_astro/_...slug_.WBhVMAu6.css">
+<link rel="stylesheet" href="/_astro/_slug_.ChLg2FS0.css">
+<link rel="stylesheet" href="/_astro/_slug_.3GJi6cRf.css">
+<link rel="stylesheet" href="/_astro/thoughts.CbYNSEou.css"></head> <body> <header id="site-header" class="site-header"> <div class="site-header-inner container"> <!-- Brand --> <a href="/" class="header-brand" aria-label="KelrinWu's Blog"> <img src="/img/avatar.png" alt="KelrinWu's Blog" class="header-avatar" width="32" height="32"> <span class="header-brand-name">KelrinWu&#39;s Blog</span> </a> <!-- Desktop nav links (hidden on mobile) --> <nav class="header-nav" aria-label="Main navigation"> <a href="/about/" class="header-nav-link" data-text="About"> About </a><a href="/posts/" class="header-nav-link is-active" data-text="Posts"> Posts </a><a href="/thoughts/" class="header-nav-link" data-text="Thoughts"> Thoughts </a><a href="/projects/" class="header-nav-link" data-text="Projects"> Projects </a><a href="/friends/" class="header-nav-link" data-text="Friends"> Friends </a><a href="/archive/" class="header-nav-link" data-text="Archive"> Archive </a> </nav> <!-- Right: actions + hamburger --> <div class="header-right"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> <button id="mobileNavToggle" class="mobile-nav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavMenu" type="button"> <span class="ham-line"></span> <span class="ham-line"></span> <span class="ham-line"></span> </button> </div> </div> <!-- Mobile dropdown menu --> <div id="mobileNavMenu" class="mobile-nav-menu" aria-hidden="true"> <a href="/about/" class="mobile-nav-item"> About </a><a href="/posts/" class="mobile-nav-item is-active"> Posts </a><a href="/thoughts/" class="mobile-nav-item"> Thoughts </a><a href="/projects/" class="mobile-nav-item"> Projects </a><a href="/friends/" class="mobile-nav-item"> Friends </a><a href="/archive/" class="mobile-nav-item"> Archive </a> </div> <script type="module" src="/_astro/Header.astro_astro_type_script_index_0_lang.DO65IW0S.js"></script> </header> <div id="mobileDrawer" class="mobile-drawer fixed inset-0 z-[1150] pointer-events-none sidebar-dependent-hide" aria-hidden="true"> <button class="mobile-drawer-backdrop absolute inset-0 border-0 bg-slate-900/34 backdrop-blur-lg opacity-0 transition-opacity duration-180" type="button" data-mobile-drawer-close aria-label="Close navigation menu"></button> <aside class="mobile-drawer-panel absolute inset-y-0 right-0 w-[min(84vw,22rem)] h-full border-l border-[var(--theme-border)] backdrop-blur-[22px] shadow-[0_24px_60px_rgba(15,23,42,0.16)] p-4 pb-6 overflow-y-auto translate-x-full transition-transform duration-[220ms] ease-[ease] theme-surface-float" role="dialog" aria-modal="true" aria-label="Article menu"> <div class="mobile-drawer-head flex items-center justify-between gap-4 mb-5"> <div class="text-[1.05rem] font-bold text-[var(--theme-fg)]">Contents</div> <button class="mobile-drawer-close inline-flex items-center justify-center w-10 h-10 flex-shrink-0" type="button" data-mobile-drawer-close aria-label="Close menu"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="mobile-drawer-extra grid gap-4">  <div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem]">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#agent--model--harness" data-index="0" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> Agent = model + harness </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#dsh-是怎么装起来的" data-index="1" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> dsh 是怎么装起来的 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#骨架服务" data-index="2" data-parent-index="1" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 骨架服务 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#能力-seam" data-index="3" data-parent-index="1" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 能力 seam </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#一次轮次" data-index="4" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 一次轮次 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#cordis-内核" data-index="5" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> Cordis 内核 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#获取与释放写在一处" data-index="6" data-parent-index="5" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 获取与释放写在一处 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#依赖消失就下线" data-index="7" data-parent-index="5" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 依赖消失就下线 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#fiber-状态机" data-index="8" data-parent-index="5" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> Fiber 状态机 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#自进化的两道坎" data-index="9" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 自进化的两道坎 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#deepseek-的解法" data-index="10" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> DeepSeek 的解法 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#时间维可逆-effect" data-index="11" data-parent-index="10" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 时间维：可逆 effect </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#空间维反应式-coeffect" data-index="12" data-parent-index="10" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 空间维：反应式 coeffect </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#理论与代码的对照" data-index="13" data-parent-index="10" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 理论与代码的对照 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#实证koishi" data-index="14" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 实证：Koishi </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#写一个工具插件" data-index="15" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 写一个工具插件 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#dsh-的四种模式" data-index="16" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> dsh 的四种模式 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#模式换不掉什么" data-index="17" data-parent-index="16" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 模式换不掉什么 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#创造模式让-agent-去写-agent" data-index="18" data-parent-index="16" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 创造模式：让 agent 去写 agent </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#总结" data-index="19" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 总结 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#参考" data-index="20" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 参考 </span> </a> </div>  </div> </nav><script type="module">function v(){document.querySelectorAll(".toc-scrollbar-container").forEach(s=>{const b=s.querySelector(".toc-scrollbar-wrap"),m=s.querySelector(".toc-custom-scrollbar"),p=s.querySelector(".toc-custom-scrollbar-thumb");if(!b||!m||!p)return;const t=b,h=m,n=p;function o(){const{scrollTop:r,scrollHeight:l,clientHeight:e}=t;if(l<=e){h.style.display="none";return}h.style.display="";const u=e/l,a=Math.max(16,u*e),i=e-a,d=r/(l-e)*i;n.style.height=`${a}px`,n.style.transform=`translateY(${d}px)`}if(o(),s.dataset.scrollbarBound==="true")return;s.dataset.scrollbarBound="true",t.addEventListener("scroll",o,{passive:!0}),new ResizeObserver(o).observe(t),new MutationObserver(o).observe(t,{childList:!0,subtree:!0,attributes:!0,attributeFilter:["class","style"]}),t.addEventListener("transitionend",o,{passive:!0});let c=!1,y=0,f=0;n.addEventListener("mousedown",r=>{r.preventDefault(),c=!0,y=r.clientY,f=t.scrollTop,document.body.style.userSelect="none"}),window.addEventListener("mousemove",r=>{if(!c)return;const{scrollHeight:l,clientHeight:e}=t,u=n.offsetHeight,a=e-u,i=r.clientY-y,d=l-e;t.scrollTop=f+i/a*d}),window.addEventListener("mouseup",()=>{c&&(c=!1,document.body.style.userSelect="")})})}v();document.addEventListener("astro:after-swap",v);</script> </div>  </div> </aside> </div> <script type="module" src="/_astro/MobileDrawer.astro_astro_type_script_index_0_lang.QZyAK5kg.js"></script> <div id="searchOverlay" class="search-overlay hidden" aria-hidden="true"> <div class="search-backdrop" data-search-close></div> <div class="search-panel" role="dialog" aria-modal="true" aria-labelledby="searchTitle"> <div class="search-head"> <div> <div id="searchTitle" class="search-title">Search</div> <div class="search-subtitle">Search by title, tag or description</div> </div> <button class="search-close" id="searchClose" type="button" aria-label="Close search"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path> </svg> </button> </div> <div class="search-input-shell"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="11" cy="11" r="8"></circle> <path d="m21 21-4.35-4.35"></path> </svg> <input id="searchInput" class="search-input" type="search" placeholder="Try searching Transformer, database, MCP..." autocomplete="off"> </div> <div id="searchMeta" class="search-meta">Press <kbd>/</kbd> to open, <kbd>Esc</kbd> to close</div> <div id="searchResults" class="search-results"> <div class="search-empty"> <div class="search-empty-title">Start searching</div> <div class="search-empty-text">Matching posts will appear here in real time.</div> </div> </div> </div> </div> <script type="module" src="/_astro/SearchOverlay.astro_astro_type_script_index_0_lang.CCrLlu7v.js"></script> <div class="py-8 min-h-[calc(100vh-160px)]">   <div class="article-page-shell"> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				var g = document.querySelector('.article-desktop-grid');
+				if (!g) return;
+				g.style.transition = 'none';
+				if (s.right) g.classList.add('sidebar-right-collapsed');
+				g.offsetHeight;
+				g.style.transition = '';
+			} catch(e) {}
+		})();
+		</script> <div class="container article-desktop-grid group/scroll"> <aside class="article-right-rail" data-sidebar="right"> <div class="sidebar-toggle-wrapper sidebar-toggle-wrapper-right"> <button class="sidebar-toggle-btn sidebar-toggle-right" data-edge-toggle="right" aria-label="Toggle TOC sidebar"> <svg width="14" height="160" viewBox="0 0 14 160" fill="none" xmlns="http://www.w3.org/2000/svg"> <defs> <linearGradient id="gtr" x1="0" y1="0" x2="0" y2="73" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0.5"></stop> </linearGradient> <linearGradient id="gbr" x1="0" y1="87" x2="0" y2="160" gradientUnits="userSpaceOnUse"> <stop offset="0%" stop-color="currentColor" stop-opacity="0.5"></stop> <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop> </linearGradient> </defs> <line x1="7" y1="0" x2="7" y2="73" stroke="url(#gtr)" stroke-width="1"></line> <path d="M7 73 L11 80 L7 87" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path> <line x1="7" y1="87" x2="7" y2="160" stroke="url(#gbr)" stroke-width="1"></line> </svg> </button> </div> <div class="article-rail-inner" data-sidebar-content="right"> <div class="toc-sticky-inner"> <div class="article-rail-dock article-rail-dock-right" data-article-header-dock="right" data-clone-ready="true"> <div class="flex items-center header-actions"> <a class="p-3 github-link group flex items-center justify-center" href="https://github.com/DaYangtuo247" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block fill-transparent stroke-current group-hover:fill-transparent"> <path stroke="none" d="M0 0h24v24H0z" fill="none"></path> <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"></path> </svg> </a> <button class="p-3" id="searchToggle" aria-label="Search posts" title="Search posts">  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>  </button> <button class="p-3" id="themeToggle" aria-label="Toggle theme" title="Toggle theme"> <svg class="theme-icon sun" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="4"></circle> <path d="M12 2v2"></path> <path d="M12 20v2"></path> <path d="m4.93 4.93 1.41 1.41"></path> <path d="m17.66 17.66 1.41 1.41"></path> <path d="M2 12h2"></path> <path d="M20 12h2"></path> <path d="m6.34 17.66-1.41 1.41"></path> <path d="m19.07 4.93-1.41 1.41"></path> </svg> <svg class="theme-icon moon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path> </svg> <svg class="theme-icon system" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 16h18"></path> <path d="M6 16a6 6 0 0 1 12 0"></path> <path d="M12 4v2"></path> <path d="M5.6 8.1 7 9.5"></path> <path d="M18.4 8.1 17 9.5"></path> </svg> </button> </div> </div> <nav class="toc toc-collapsible" data-collapsible="true">  <div class="toc-scrollbar-container relative"> <div class="toc-list toc-collapsible-list text-[.825rem] toc-scrollbar-wrap max-h-[calc(100vh-70px)] overflow-y-auto">  <a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#agent--model--harness" data-index="0" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> Agent = model + harness </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#dsh-是怎么装起来的" data-index="1" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> dsh 是怎么装起来的 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#骨架服务" data-index="2" data-parent-index="1" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 骨架服务 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#能力-seam" data-index="3" data-parent-index="1" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 能力 seam </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#一次轮次" data-index="4" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 一次轮次 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#cordis-内核" data-index="5" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> Cordis 内核 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#获取与释放写在一处" data-index="6" data-parent-index="5" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 获取与释放写在一处 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#依赖消失就下线" data-index="7" data-parent-index="5" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 依赖消失就下线 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#fiber-状态机" data-index="8" data-parent-index="5" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> Fiber 状态机 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#自进化的两道坎" data-index="9" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 自进化的两道坎 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#deepseek-的解法" data-index="10" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> DeepSeek 的解法 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#时间维可逆-effect" data-index="11" data-parent-index="10" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 时间维：可逆 effect </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#空间维反应式-coeffect" data-index="12" data-parent-index="10" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 空间维：反应式 coeffect </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#理论与代码的对照" data-index="13" data-parent-index="10" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 理论与代码的对照 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#实证koishi" data-index="14" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 实证：Koishi </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#写一个工具插件" data-index="15" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 写一个工具插件 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#dsh-的四种模式" data-index="16" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> dsh 的四种模式 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#模式换不掉什么" data-index="17" data-parent-index="16" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 模式换不掉什么 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight toc-collapsed" href="#创造模式让-agent-去写-agent" data-index="18" data-parent-index="16" data-depth="3" data-level="1" aria-hidden="true" style="--toc-level:1;"> <span class="toc-entry-label font-normal"> 创造模式：让 agent 去写 agent </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#总结" data-index="19" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 总结 </span> </a><a class="toc-entry block border-l border-transparent text-inherit leading-tight" href="#参考" data-index="20" data-parent-index="-1" data-depth="2" data-level="0" aria-hidden="false" style="--toc-level:0;"> <span class="toc-entry-label font-medium"> 参考 </span> </a> </div> <div class="toc-custom-scrollbar"> <div class="toc-custom-scrollbar-thumb"></div> </div> </div> </nav> </div> </div> </aside> <main class="grow article-main-column"> <article class="article-main-panel"> <div class="prose max-w-none dark:prose-invert
+  prose-img:rounded-xl prose-img:mx-auto prose-img:block
+  prose-h1:target:pt-20 prose-h2:target:pt-20 prose-h3:target:pt-20
+  prose-code:before:content-none prose-code:after:content-none
+  prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md">  <div class="article-title-block"> <!-- 1. 返回链接 --> <a href="/posts/" class="article-back-link" data-back-link> <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <polyline points="15 18 9 12 15 6"></polyline> </svg>
+Back to Posts
+</a> <!-- 2. 标题 --> <h1 class="article-title">DeepSeek Harness 与 Cordis 内核剖析</h1> <!-- 3. 分类/标签 + meta：合并为一行 flex，窄屏自然换行 --> <div class="article-header-inline-row"> <div class="article-label-row"> <a href="/archive/?category=%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD" class="pill-tag px-2 py-0.5 text-xs no-underline">人工智能</a><a href="/archive/?category=%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5" class="pill-tag px-2 py-0.5 text-xs no-underline">工程实践</a> <a href="/archive/?tag=Agent" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;Agent</a><a href="/archive/?tag=DeepSeek" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;DeepSeek</a><a href="/archive/?tag=Cordis" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;Cordis</a><a href="/archive/?tag=%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;论文阅读</a><a href="/archive/?tag=TypeScript" class="pill-tag px-2 py-0.5 text-xs no-underline">#&thinsp;TypeScript</a> </div> <div class="article-meta-row"> <div class="flex items-center gap-1" title="Published"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect> <line x1="16" y1="2" x2="16" y2="6"></line> <line x1="8" y1="2" x2="8" y2="6"></line> <line x1="3" y1="10" x2="21" y2="10"></line> </svg> <time datetime="2026-09-13T00:00:00.000Z"> Sep 13, 2026 </time> </div> <div class="flex items-center gap-1" title="Reading time"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <circle cx="12" cy="12" r="10"></circle> <polyline points="12 6 12 12 16 14"></polyline> </svg> <span>41 min read</span> </div> <div class="flex items-center gap-1" title="Views"> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path> <circle cx="12" cy="12" r="3"></circle> </svg> <span class="waline-pageview-count" data-path="36575ab8dc2f2168">—</span> </div> </div> </div> <!-- 4. 分割线 --> <div class="article-title-divider"></div> </div> <div class="article-content"> <p>2026 年 8 月 13 日，DeepSeek 开源了自家的 agent harness——仓库 <code>deepseek-ai/deepseek-harness</code>，命令行叫 <code>dsh</code>，MIT 许可，纯 TypeScript。副标题只有一句话：<strong>Everything is a Plugin.</strong></p>
+<p>同一天，另一个仓库也悄悄建了起来：<code>cordiverse/paper</code>。两周后论文挂上 arXiv，名字叫《A Programming Paradigm for Spatiotemporal Composability》，92 页，作者是北大的 Yifan Shi、Wei Zhang 和 DeepSeek 的 Tianyi Cui。</p>
+<p>这就是有意思的地方。别家开源 agent 框架，README 里写一句「我们是模块化的」就完事了。DeepSeek 开源了一个框架，外加一篇论文，专门论证「模块化」这件事在数学上该怎么定义。</p>
+<p>这篇文章想说清三件事：dsh 长什么样、它底下的 Cordis 内核给了它什么、论文到底在解什么问题。</p>
+<h2 id="agent--model--harness"><a href="#agent--model--harness">Agent = model + harness</a><a href="#agent--model--harness" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="agent--model--harness"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>一个能干活的编程 agent，模型只占一半。</p>
+<p>另一半是工程层：读写文件、跑终端、搜索、管上下文、做计划、调度 subagent、把这一切记成可回放的会话。这一层就是 harness。</p>
+<p>同一个模型换个 harness，实际能力差距可以非常大。这也是为什么各家在模型之外还要卷这一层。</p>
+<p>dsh 的立场比较极端：<strong>harness 里没有一块是特权代码</strong>。模型适配器是插件，工具注册表是插件，会话日志是插件，连 agent loop 本身都是插件——全都能在配置里换掉，不用改一行源码。</p>
+<p>有多极端？看两个数字。</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 760 266" role="img" aria-label="Cordis 内核与 dsh 插件代码量对比：内核 2693 行，插件 651443 行">
+  <defs>
+    <marker id="hpDshArrA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head"></path>
+    </marker>
+  </defs>
+  <text x="40" y="30" class="hp-t-title">仓库里的 TypeScript 源码（不含 .d.ts）</text>
+  <rect x="40" y="52" width="660" height="48" rx="6" class="hp-node"></rect>
+  <rect x="40" y="52" width="6" height="48" rx="2" class="hp-pill-accent"></rect>
+  <text x="380" y="82" text-anchor="middle" class="hp-t-sub">packages/ · 651,443 行 · 275 个 package.json · 55 个顶层目录——全部是插件</text>
+  <path d="M 43 100 L 43 124 L 134 124" class="hp-accent-line-dashed"></path>
+  <text x="142" y="128" class="hp-t-accent-sm">vendor/cordis/src · 2,693 行 · 占 0.41%</text>
+  <text x="40" y="172" class="hp-t-title">这 2,693 行里没有任何 agent 概念</text>
+  <rect x="40" y="188" width="200" height="56" rx="6" class="hp-node-accent"></rect>
+  <text x="140" y="210" text-anchor="middle" class="hp-t-accent-sm">context.ts · fiber.ts</text>
+  <text x="140" y="229" text-anchor="middle" class="hp-t-sub">生命周期与可逆副作用</text>
+  <rect x="256" y="188" width="200" height="56" rx="6" class="hp-node-accent"></rect>
+  <text x="356" y="210" text-anchor="middle" class="hp-t-accent-sm">registry.ts · reflect.ts</text>
+  <text x="356" y="229" text-anchor="middle" class="hp-t-sub">服务解析与依赖追踪</text>
+  <rect x="472" y="188" width="228" height="56" rx="6" class="hp-node-accent"></rect>
+  <text x="586" y="210" text-anchor="middle" class="hp-t-accent-sm">events.ts · service.ts</text>
+  <text x="586" y="229" text-anchor="middle" class="hp-t-sub">类型化事件、服务基类与日志</text>
+</svg>
+</div>
+<style>
+  .hp.hp-diagram {
+    --hp-red: #D64545;
+    --hp-orange: #D9822B;
+    --hp-blue: #3B6FE0;
+    --hp-green: #2E9E5B;
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-border);
+    border-radius: var(--theme-radius-lg);
+    padding: 1.25rem;
+    margin: 1.25rem 0 1.75rem;
+    overflow-x: auto;
+  }
+  .dark .hp.hp-diagram {
+    background: var(--theme-surface-elevated);
+  }
+  .hp.hp-diagram svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+    min-width: 460px;
+  }
+  .hp.hp-diagram svg text {
+    font-family: ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hp.hp-diagram .hp-node {
+    fill: var(--theme-surface);
+    stroke: var(--theme-border);
+    stroke-width: 1.5;
+  }
+  .hp.hp-diagram .hp-node-accent {
+    fill: color-mix(in srgb, var(--theme-accent) 10%, var(--theme-surface));
+    stroke: var(--theme-accent);
+    stroke-width: 1.5;
+  }
+  .hp.hp-diagram .hp-node-muted {
+    fill: color-mix(in srgb, var(--theme-muted) 8%, var(--theme-surface));
+    stroke: var(--theme-border);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+  }
+  .hp.hp-diagram .hp-node-green {
+    fill: color-mix(in srgb, var(--hp-green) 13%, var(--theme-surface));
+    stroke: color-mix(in srgb, var(--hp-green) 55%, var(--theme-border));
+    stroke-width: 1.5;
+  }
+  .hp.hp-diagram .hp-node-red {
+    fill: color-mix(in srgb, var(--hp-red) 12%, var(--theme-surface));
+    stroke: color-mix(in srgb, var(--hp-red) 55%, var(--theme-border));
+    stroke-width: 1.5;
+  }
+  .hp.hp-diagram .hp-node-blue {
+    fill: color-mix(in srgb, var(--hp-blue) 12%, var(--theme-surface));
+    stroke: color-mix(in srgb, var(--hp-blue) 55%, var(--theme-border));
+    stroke-width: 1.5;
+  }
+  .hp.hp-diagram .hp-pill-accent {
+    fill: var(--theme-accent);
+  }
+
+  .hp.hp-diagram .hp-t-title {
+    fill: var(--theme-fg);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-t-title-sm {
+    fill: var(--theme-fg);
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-t-body {
+    fill: var(--theme-fg);
+    font-size: 11px;
+  }
+  .hp.hp-diagram .hp-t-sub {
+    fill: var(--theme-muted);
+    font-size: 10.5px;
+  }
+  .hp.hp-diagram .hp-t-sub-xs {
+    fill: var(--theme-muted);
+    font-size: 9.5px;
+  }
+  .hp.hp-diagram .hp-t-accent {
+    fill: var(--theme-accent);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-t-accent-sm {
+    fill: var(--theme-accent);
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-t-accent-xs {
+    fill: color-mix(in srgb, var(--theme-accent) 70%, var(--theme-fg));
+    font-size: 9.5px;
+  }
+  .hp.hp-diagram .hp-t-green {
+    fill: color-mix(in srgb, var(--hp-green) 70%, var(--theme-fg));
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-t-red {
+    fill: color-mix(in srgb, var(--hp-red) 72%, var(--theme-fg));
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .hp.hp-diagram .hp-t-blue {
+    fill: color-mix(in srgb, var(--hp-blue) 70%, var(--theme-fg));
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+
+  .hp.hp-diagram .hp-arrow {
+    stroke: var(--theme-muted);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .hp.hp-diagram .hp-arrow-dashed {
+    stroke: var(--theme-muted);
+    stroke-width: 1.5;
+    fill: none;
+    stroke-dasharray: 4 3;
+  }
+  .hp.hp-diagram .hp-accent-line {
+    stroke: var(--theme-accent);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .hp.hp-diagram .hp-accent-line-dashed {
+    stroke: var(--theme-accent);
+    stroke-width: 1.5;
+    fill: none;
+    stroke-dasharray: 4 3;
+  }
+  .hp.hp-diagram .hp-axis {
+    stroke: var(--theme-muted);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .hp.hp-diagram .hp-grid {
+    stroke: var(--theme-border);
+    stroke-width: 1;
+    fill: none;
+    stroke-dasharray: 3 4;
+  }
+  .hp.hp-diagram .hp-arrow-head {
+    fill: var(--theme-muted);
+  }
+  .hp.hp-diagram .hp-arrow-head-accent {
+    fill: var(--theme-accent);
+  }
+</style>
+<p><em>内核不认识「agent」这个词。它只认识组件、副作用和依赖</em></p>
+<p>这就是 dsh 架构的全部秘密：没有需要打补丁的特权内核。扩展它的方式是把插件挂到别的插件旁边，而所有注册都是副作用，插件卸载时自动撤销。</p>
+<h2 id="dsh-是怎么装起来的"><a href="#dsh-是怎么装起来的">dsh 是怎么装起来的</a><a href="#dsh-是怎么装起来的" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="dsh-是怎么装起来的"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>跑起来的 <code>dsh</code> 是一棵插件树，由启动时按序叠加的几层拼成。</p>
+<p>记住三个名词就够了。<strong>profile</strong> 是一份具名装配，随发行版交付的模板有 <code>web</code>、<code>headless</code>、<code>sdk</code>、<code>sdk-minimal</code>、<code>acp</code> 五个。<strong>组合包</strong>是「配置 + 挂载代码」的分发格式，<code>dsh-base</code> 提供模型适配器、工具、持久化、沙箱、凭据、遥测这些共享底座。<strong>patch</strong> 是覆盖层，按 <code>id</code> 定位某一行，替换它整个 config，或者插入新行。</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 760 430" role="img" aria-label="dsh 的装配层叠：组合包、profile patch、home patch、命令行 overlay 依次叠加">
+  <defs>
+    <marker id="hpDshArrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head"></path>
+    </marker>
+  </defs>
+  <rect x="30" y="24" width="440" height="40" rx="7" class="hp-node-muted"></rect>
+  <text x="46" y="49" class="hp-t-sub">① 空条目列表（起点）</text>
+  <rect x="30" y="72" width="440" height="46" rx="7" class="hp-node"></rect>
+  <text x="46" y="93" class="hp-t-title-sm">② dsh-base 组合包</text>
+  <text x="46" y="110" class="hp-t-sub">模型适配器 · 工具 · 持久化 · 沙箱与审批 · 设置 · 凭据 · 遥测</text>
+  <rect x="30" y="126" width="440" height="46" rx="7" class="hp-node"></rect>
+  <text x="46" y="147" class="hp-t-title-sm">③ 模式组合包（dsh-web-app / headless / sdk-app / acp-app）</text>
+  <text x="46" y="164" class="hp-t-sub">按 profile 列出的顺序逐个应用</text>
+  <rect x="30" y="180" width="440" height="40" rx="7" class="hp-node-accent"></rect>
+  <text x="46" y="205" class="hp-t-accent-sm">④ profile 的 cordis.patch.yml</text>
+  <rect x="30" y="228" width="440" height="40" rx="7" class="hp-node-accent"></rect>
+  <text x="46" y="253" class="hp-t-accent-sm">⑤ Harness home 级 cordis.patch.yml</text>
+  <rect x="30" y="276" width="440" height="40" rx="7" class="hp-node-accent"></rect>
+  <text x="46" y="301" class="hp-t-accent-sm">⑥ 命令行 --patch overlay</text>
+  <line x1="500" y1="34" x2="500" y2="300" class="hp-arrow" marker-end="url(#hpDshArrB)"></line>
+  <text x="516" y="120" class="hp-t-body">后写覆盖先写</text>
+  <text x="516" y="140" class="hp-t-sub">patch 按 id 定位条目，</text>
+  <text x="516" y="156" class="hp-t-sub">替换它整个 config，</text>
+  <text x="516" y="172" class="hp-t-sub">或插入一个新条目</text>
+  <text x="516" y="216" class="hp-t-body">每行只由</text>
+  <text x="516" y="234" class="hp-t-sub">一层组合包 + 用户那层</text>
+  <text x="516" y="250" class="hp-t-sub">共同决定，最后一层胜出</text>
+  <line x1="250" y1="316" x2="250" y2="342" class="hp-arrow" marker-end="url(#hpDshArrB)"></line>
+  <rect x="30" y="346" width="700" height="56" rx="7" class="hp-node-accent"></rect>
+  <text x="50" y="371" class="hp-t-accent">运行中的 dsh = 一棵插件树</text>
+  <text x="50" y="391" class="hp-t-sub">用 dsh --profile web --dump-config 打印它；打印出来的任何一行都能被你自己的 patch 替换</text>
+</svg>
+</div>
+<p><em>条目在列表里的位置不决定谁先启动——那由服务依赖决定</em></p>
+<p>所以想换掉某个能力，不用 fork 仓库，写条 patch 就行。想知道有哪些行可以换：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line" data-line="1"><span style="color:#6F42C1;--shiki-dark:#B392F0">dsh</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --profile</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> web</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> --dump-config</span></span></code></pre></div>
+<p>有个细节能看出这套东西的克制：<code>web</code> profile 默认实时重载 patch，而 <code>headless</code>、<code>sdk</code>、<code>acp</code> 只在启动时应用一次——一次性运行或 stdio 应用拿到工作之后，中途替换它的依赖会破坏生命周期。热替换不是「永远开着更好」的特性。</p>
+<h3 id="骨架服务"><a href="#骨架服务">骨架服务</a><a href="#骨架服务" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="骨架服务"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>Cordis 的服务都挂在上下文的稳定键上，dsh 的骨架大致是这些：</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>包</th><th>职责</th><th><code>ctx</code> 键</th></tr></thead><tbody><tr><td><code>core/session</code></td><td>仅追加的会话事件日志</td><td><code>ctx.sessions</code></td></tr><tr><td><code>core/system-prompt</code></td><td>提示词片段与工具 schema 的组装</td><td><code>ctx.systemPrompt</code></td></tr><tr><td><code>core/tools</code></td><td>工具注册表 + 带把关的执行流水线</td><td><code>ctx.tools</code></td></tr><tr><td><code>core/agent</code></td><td><code>Agent</code> 接口与活跃 agent 注册表</td><td><code>ctx.agents</code></td></tr><tr><td><code>core/agent-loop</code></td><td>实现该接口的默认驱动器</td><td><code>ctx.agentLoop</code></td></tr><tr><td><code>llm/llm</code></td><td>消息与流式词汇表，适配器 seam</td><td><code>ctx.llm</code></td></tr></tbody></table></div>
+<p>注意 <code>core/agent</code> 和 <code>core/agent-loop</code> 是<strong>两个包</strong>：前者定义「什么是 agent」，后者是「默认怎么驱动它」。想换一套循环策略，替换后者即可，<code>ctx.agents</code> 的消费方（UI、SDK、遥测）一行不改。这就是「agent loop 本身也是插件」的具体兑现方式。</p>
+<h3 id="能力-seam"><a href="#能力-seam">能力 seam</a><a href="#能力-seam" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="能力-seam"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>dsh 文档里反复出现一个词：<strong>seam</strong>（缝）。一个 seam 是包含三种角色的可替换能力——</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 760 350" role="img" aria-label="能力 seam 的三角结构：Service Definition、Service Provider、Consumer">
+  <defs>
+    <marker id="hpDshArrC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head"></path>
+    </marker>
+  </defs>
+  <rect x="265" y="20" width="230" height="72" rx="8" class="hp-node-accent"></rect>
+  <text x="380" y="44" text-anchor="middle" class="hp-t-accent-sm">Service Definition</text>
+  <text x="380" y="63" text-anchor="middle" class="hp-t-body">ctx.shell（ShellExecutor 抽象类）</text>
+  <text x="380" y="81" text-anchor="middle" class="hp-t-sub">dsh-shell · 只声明接口与词汇类型</text>
+  <rect x="30" y="200" width="270" height="86" rx="8" class="hp-node-green"></rect>
+  <text x="165" y="224" text-anchor="middle" class="hp-t-green">Service Provider</text>
+  <text x="165" y="244" text-anchor="middle" class="hp-t-body">dsh-bash-local</text>
+  <text x="165" y="262" text-anchor="middle" class="hp-t-body">dsh-bash-sandbox</text>
+  <text x="165" y="279" text-anchor="middle" class="hp-t-sub">实现接口，注册到 ctx.shell</text>
+  <rect x="460" y="200" width="270" height="86" rx="8" class="hp-node-blue"></rect>
+  <text x="595" y="224" text-anchor="middle" class="hp-t-blue">Consumer</text>
+  <text x="595" y="244" text-anchor="middle" class="hp-t-body">dsh-tool-bash</text>
+  <text x="595" y="262" text-anchor="middle" class="hp-t-sub">inject: ['shell']</text>
+  <text x="595" y="279" text-anchor="middle" class="hp-t-sub">只认键名，不 import 实现</text>
+  <path d="M 200 198 L 300 96" class="hp-arrow" marker-end="url(#hpDshArrC)"></path>
+  <text x="196" y="150" class="hp-t-sub">注册实现</text>
+  <path d="M 560 198 L 460 96" class="hp-arrow" marker-end="url(#hpDshArrC)"></path>
+  <text x="510" y="150" class="hp-t-sub">按键查找</text>
+  <line x1="300" y1="243" x2="460" y2="243" class="hp-arrow-dashed"></line>
+  <text x="380" y="236" text-anchor="middle" class="hp-t-sub-xs">彼此不认识</text>
+  <text x="380" y="320" text-anchor="middle" class="hp-t-title-sm">换掉一个提供方 = 换掉整个能力，消费方一行不改</text>
+  <text x="380" y="338" text-anchor="middle" class="hp-t-sub">把 fs 与进程提供方指向远程沙箱，Bash、PTY、LSP 一起搬过去</text>
+</svg>
+</div>
+<p><em>seam 是完整能力，绝不是其中某一个角色</em></p>
+<p>文档里有句话点破了它的价值：文件系统和进程提供方共享同一个执行世界，所以<strong>把它们指向远程沙箱，就等于把 Bash、PTY 和 LSP 一并搬了过去</strong>，不用给每个提供方单独做 fork。</p>
+<p>顺带一提，dsh 并不绑死 DeepSeek 自家模型。设置页里能直接添加 <code>anthropic</code>、<code>openai</code>、<code>moonshotai</code>（Kimi）、<code>zai</code>（GLM），也能填自建网关。</p>
+<h2 id="一次轮次"><a href="#一次轮次">一次轮次</a><a href="#一次轮次" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="一次轮次"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>两个术语先记住：<strong>步骤</strong>是一次模型请求，加上它引发的工具执行；<strong>轮次</strong>是一次对已接纳输入的排空，包含零个或多个步骤——是的，可以是零个，<code>agent/pre-step</code> 把首批消息拒了，轮次就不花任何步骤地关闭。</p>
+<div class="mermaid-diagram-container"><div class="mermaid-wrapper" id="mermaid-anmcmn"><div class="mermaid" data-mermaid-code="sequenceDiagram
+  participant U as 用户
+  participant A as Agent inbox
+  participant D as agent-loop 驱动器
+  participant P as ctx.systemPrompt
+  participant L as ctx.llm
+  participant T as ctx.tools
+  participant S as 会话日志
+  U->>A: followup(content)
+  A->>D: 排队的工作唤醒驱动器
+  D->>S: turn/start
+  D->>P: system-prompt/assemble（waterfall）
+  D->>D: agent/pre-step（waterfall）→ enter / reject
+  D->>S: step/start
+  D->>L: agent/request（waterfall）→ prepareCall
+  D->>S: system/message · user/message · request/header
+  D->>L: 绑定后的调用经 llm/stream 发出
+  L-->>D: StreamChunk*（agent/assistant-stream 实时帧）
+  D->>S: assistant/message（内嵌紧凑带时间 stream）
+  D->>T: tools/pre-execute → execute → post-execute
+  T-->>S: tool/call · tool/result
+  D->>S: step/end
+  D->>D: agent/turn-stopping（serial 终止检查点）
+  D->>S: turn/end">sequenceDiagram
+  participant U as 用户
+  participant A as Agent inbox
+  participant D as agent-loop 驱动器
+  participant P as ctx.systemPrompt
+  participant L as ctx.llm
+  participant T as ctx.tools
+  participant S as 会话日志
+  U->>A: followup(content)
+  A->>D: 排队的工作唤醒驱动器
+  D->>S: turn/start
+  D->>P: system-prompt/assemble（waterfall）
+  D->>D: agent/pre-step（waterfall）→ enter / reject
+  D->>S: step/start
+  D->>L: agent/request（waterfall）→ prepareCall
+  D->>S: system/message · user/message · request/header
+  D->>L: 绑定后的调用经 llm/stream 发出
+  L-->>D: StreamChunk*（agent/assistant-stream 实时帧）
+  D->>S: assistant/message（内嵌紧凑带时间 stream）
+  D->>T: tools/pre-execute → execute → post-execute
+  T-->>S: tool/call · tool/result
+  D->>S: step/end
+  D->>D: agent/turn-stopping（serial 终止检查点）
+  D->>S: turn/end</div></div><script type="text/javascript">(() => {
+    // 单例模式：检查是否已经初始化过
+    if (window.mermaidInitialized) {
+        return;
+    }
+
+    window.mermaidInitialized = true;
+
+    // 记录当前主题状态，避免不必要的重新渲染
+    let currentTheme = null;
+    let isRendering = false; // 防止并发渲染
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000; // 1秒
+
+    // 检查主题是否真的发生了变化
+    function hasThemeChanged() {
+        const isDark = document.documentElement.classList.contains("dark");
+        const newTheme = isDark ? "dark" : "default";
+        // 只做比较，不更新 currentTheme——更新留给 renderMermaidDiagrams 在实际渲染时做，
+        // 否则 renderMermaidDiagrams 内的 needsThemeUpdate 检查始终为 false（主题已被提前改掉）
+        return currentTheme !== newTheme;
+    }
+
+    // 等待 Mermaid 库加载完成
+    function waitForMermaid(timeout = 10000) {
+        return new Promise((resolve, reject) => {
+            const startTime = Date.now();
+
+            function check() {
+                if (window.mermaid && typeof window.mermaid.initialize === "function") {
+                    resolve(window.mermaid);
+                } else if (Date.now() - startTime > timeout) {
+                    reject(new Error("Mermaid library failed to load within timeout"));
+                } else {
+                    setTimeout(check, 100);
+                }
+            }
+
+            check();
+        });
+    }
+
+    // 设置 MutationObserver 监听 html 元素的 class 属性变化
+    function setupMutationObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (
+                    mutation.type === "attributes" &&
+                    mutation.attributeName === "class"
+                ) {
+                    // 检查是否是 dark 类的变化
+                    const target = mutation.target;
+                    const wasDark = mutation.oldValue
+                        ? mutation.oldValue.includes("dark")
+                        : false;
+                    const isDark = target.classList.contains("dark");
+
+                    if (wasDark !== isDark) {
+                        if (hasThemeChanged()) {
+                            // 延迟渲染，避免主题切换时的闪烁
+                            setTimeout(() => renderMermaidDiagrams(), 150);
+                        }
+                    }
+                }
+            });
+        });
+
+        // 开始观察 html 元素的 class 属性变化
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["class"],
+            attributeOldValue: true,
+        });
+    }
+
+    // 把 svg 序列化成 data URI，交给站点已有的 Fancybox 图片预览打开，
+    // 复用它自带的自由缩放/拖拽/双指缩放，不用再自己维护一套缩放平移逻辑。
+    // 颜色完全用 SVG 自带的（mermaid 主题 CSS + 图表 style 指令），不做任何裁剪/覆盖。
+    function serializeSvgToDataUri(svgElement, naturalWidth, naturalHeight, bgColor) {
+        const clone = svgElement.cloneNode(true);
+        clone.removeAttribute("style");
+        clone.setAttribute("width", String(naturalWidth));
+        if (naturalHeight) clone.setAttribute("height", String(naturalHeight));
+
+        // 注入背景矩形：SVG 本身透明，直接叠在 Fancybox 深色遮罩上节点会与背景混为一体。
+        // 背景色取放大前图表容器（.mermaid-diagram-container）的实际背景色，
+        // 而不是固定颜色——这样浅色/深色主题下预览的底色都能跟页面内展示时保持一致。
+        const bgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        bgRect.setAttribute("width", "100%");
+        bgRect.setAttribute("height", "100%");
+        bgRect.setAttribute("fill", bgColor);
+        clone.insertBefore(bgRect, clone.firstChild);
+
+        const serialized = new XMLSerializer().serializeToString(clone);
+        return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(serialized)))}`;
+    }
+
+    // 用 <a data-mermaid-gallery="mermaid-gallery"> 包裹图表，供 fancybox-init.ts
+    // 的自定义点击委托识别。不用 data-fancybox，避免 Fancybox 内置的 auto-bind
+    // 以默认配置（含 Thumbs）先于自定义 handler 接管点击，导致缩略图无法禁用。
+    //
+    // 用 data-src 存 SVG data URI、href="javascript:void(0)" 仅作占位：
+    // Fancybox fromNodes 优先读 dataset.src；同时避免真实 href 触发 Astro 路由器
+    // 的 history 变化，防止 astro:page-load 再次引发 mermaid 重渲染。
+    function wrapWithFancyboxAnchor(element, svgElement, naturalWidth, naturalHeight, bgColor) {
+        const dataUri = serializeSvgToDataUri(svgElement, naturalWidth, naturalHeight, bgColor);
+
+        const parent = element.parentElement;
+        if (parent && parent.tagName === "A" && parent.dataset.mermaidGallery === "mermaid-gallery") {
+            // 重新渲染（主题切换）：只刷新 data-src，不重复包裹
+            parent.dataset.src = dataUri;
+            return;
+        }
+
+        const anchor = document.createElement("a");
+        anchor.href = "javascript:void(0)";
+        anchor.dataset.src = dataUri;
+        anchor.dataset.mermaidGallery = "mermaid-gallery";
+        anchor.dataset.type = "image";
+        anchor.className = "mermaid-clickable";
+        anchor.title = "点击放大查看";
+
+        element.parentNode.insertBefore(anchor, element);
+        anchor.appendChild(element);
+    }
+
+    // 设置其他事件监听器
+    function setupEventListeners() {
+        // SPA 导航后重新渲染新页面上的图表
+        document.addEventListener("astro:page-load", () => {
+            retryCount = 0;
+            // 只有存在尚未渲染的元素时才重置主题状态并触发重渲染，
+            // 避免 Fancybox Hash 插件（或其他修改 history 的代码）触发
+            // astro:page-load 时对已渲染图表做无谓的重渲染（会引发闪烁）
+            const elements = document.querySelectorAll(".mermaid[data-mermaid-code]");
+            const hasUnrendered = Array.from(elements).some(
+                (el) => !el.querySelector("svg"),
+            );
+            if (hasUnrendered) {
+                currentTheme = null;
+            }
+            if (hasThemeChanged()) {
+                setTimeout(() => renderMermaidDiagrams(), 100);
+            }
+        });
+        // 注意：不监听 visibilitychange——灯箱开/关会触发 visibility 切换，
+        // 从而意外地重新渲染所有图表，造成 mermaid 闪烁。
+    }
+
+    async function initializeMermaid() {
+        try {
+            await waitForMermaid();
+
+            // 主题相关的 initialize() 调用统一在 renderMermaidDiagrams 里做
+            // （它需要读实际的 isDark 状态），这里不用重复初始化一次。
+            await renderMermaidDiagrams();
+        } catch (error) {
+            console.error("Failed to initialize Mermaid:", error);
+            // 如果初始化失败，尝试重新加载
+            if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                setTimeout(() => initializeMermaid(), RETRY_DELAY * retryCount);
+            }
+        }
+    }
+
+    async function renderMermaidDiagrams() {
+        // 防止并发渲染
+        if (isRendering) {
+            return;
+        }
+
+        // 检查 Mermaid 是否可用
+        if (!window.mermaid || typeof window.mermaid.render !== "function") {
+            console.warn("Mermaid not available, skipping render");
+            return;
+        }
+
+        isRendering = true;
+
+        try {
+            const mermaidElements = document.querySelectorAll(
+                ".mermaid[data-mermaid-code]",
+            );
+
+            if (mermaidElements.length === 0) {
+                isRendering = false;
+                return;
+            }
+
+            // 延迟检测主题，确保 DOM 已经更新
+            await new Promise((resolve) => setTimeout(resolve, 100));
+
+            const htmlElement = document.documentElement;
+            const isDark = htmlElement.classList.contains("dark");
+            const theme = isDark ? "dark" : "default";
+
+            // 更新 Mermaid 主题（只需要更新一次）。themeVariables 只给字体，
+            // 节点颜色交给 mermaid 自带的主题 CSS 和图表里的 style 指令处理，
+            // 不在这里覆盖，否则会和图表作者手动指定的颜色打架。
+            window.mermaid.initialize({
+                startOnLoad: false,
+                theme: theme,
+                themeVariables: {
+                    fontFamily: "inherit",
+                    fontSize: "16px",
+                },
+                securityLevel: "loose",
+                errorLevel: "warn",
+                logLevel: "error",
+            });
+
+            const needsThemeUpdate = theme !== currentTheme;
+            currentTheme = theme; // 在渲染前更新，防止并发触发重复渲染
+
+            // 批量渲染所有图表，添加重试机制
+            const renderPromises = Array.from(mermaidElements).map(
+                async (element, index) => {
+                    // 主题未变且已渲染过 SVG，跳过此元素，避免 innerHTML 清空造成闪烁
+                    if (!needsThemeUpdate && element.querySelector("svg")) {
+                        return;
+                    }
+
+                    let attempts = 0;
+                    const maxAttempts = 3;
+
+                    while (attempts < maxAttempts) {
+                        try {
+                            const code = element.getAttribute("data-mermaid-code");
+                            if (!code) {
+                                break;
+                            }
+                            // 渲染图表
+                            const { svg } = await window.mermaid.render(
+                                `mermaid-${Date.now()}-${index}-${attempts}`,
+                                code,
+                            );
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(
+                                svg,
+                                "image/svg+xml",
+                            );
+                            const svgElement = doc.documentElement;
+                            element.innerHTML = "";
+                            element.appendChild(svgElement);
+                            // 默认始终缩小铺满容器，保证完整可见不裁切；
+                            // 需要看清细节时点击图表用 Fancybox 灯箱自由缩放
+                            const insertedSvg = element.querySelector("svg");
+                            if (insertedSvg) {
+                                const viewBox = insertedSvg.getAttribute("viewBox");
+                                const [, , naturalWidth, naturalHeight] = viewBox
+                                    ? viewBox.split(/\s+/).map(Number)
+                                    : [];
+
+                                insertedSvg.setAttribute("width", "100%");
+                                insertedSvg.style.maxWidth = "100%";
+                                insertedSvg.removeAttribute("height");
+                                insertedSvg.style.height = "auto";
+                                if (isDark) {
+                                    svgElement.style.filter = "brightness(0.9) contrast(1.1)";
+                                } else {
+                                    svgElement.style.filter = "none";
+                                }
+                                // 灯箱预览背景色取图表容器放大前的实际背景色（受当前主题影响），
+                                // 而不是固定颜色，保证预览底色与页面内展示时一致
+                                const diagramContainer = element.closest(".mermaid-diagram-container");
+                                const bgColor = diagramContainer
+                                    ? window.getComputedStyle(diagramContainer).backgroundColor
+                                    : (isDark ? "#242426" : "#f5f5f7");
+                                wrapWithFancyboxAnchor(
+                                    element,
+                                    insertedSvg,
+                                    naturalWidth || 800,
+                                    naturalHeight,
+                                    bgColor,
+                                );
+                            }
+                            // 渲染成功，跳出重试循环
+                            break;
+                        } catch (error) {
+                            attempts++;
+                            console.warn(
+                                `Mermaid rendering attempt ${attempts} failed for element ${index}:`,
+                                error,
+                            );
+                            if (attempts >= maxAttempts) {
+                                console.error(
+                                    `Failed to render Mermaid diagram after ${maxAttempts} attempts:`,
+                                    error,
+                                );
+                                element.innerHTML = `
+                                    <div class="mermaid-error">
+                                        <p>Failed to render diagram after ${maxAttempts} attempts.</p>
+                                        <button onclick="location.reload()" style="margin-top: 8px; padding: 4px 8px; background: var(--theme-surface); border: 1px solid var(--theme-border); border-radius: 4px; cursor: pointer;">
+                                            Retry Page
+                                        </button>
+                                    </div>
+                                `;
+                            } else {
+                                // 等待一段时间后重试
+                                await new Promise((resolve) =>
+                                    setTimeout(resolve, 500 * attempts),
+                                );
+                            }
+                        }
+                    }
+                },
+            );
+
+            // 等待所有渲染完成
+            await Promise.all(renderPromises);
+            retryCount = 0; // 重置重试计数
+        } catch (error) {
+            console.error("Error in renderMermaidDiagrams:", error);
+
+            // 如果渲染失败，尝试重新渲染
+            if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                setTimeout(() => renderMermaidDiagrams(), RETRY_DELAY * retryCount);
+            }
+        } finally {
+            isRendering = false;
+        }
+    }
+
+    // 初始化主题状态
+    function initializeThemeState() {
+        const isDark = document.documentElement.classList.contains("dark");
+        currentTheme = isDark ? "dark" : "default";
+    }
+
+    // 加载 Mermaid 库
+    async function loadMermaid() {
+        if (typeof window.mermaid !== "undefined") {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement("script");
+            script.src =
+                "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js";
+
+            script.onload = () => {
+                console.log("Mermaid library loaded successfully");
+                resolve();
+            };
+
+            script.onerror = (error) => {
+                console.error("Failed to load Mermaid library:", error);
+                // 尝试备用 CDN
+                const fallbackScript = document.createElement("script");
+                fallbackScript.src = "https://unpkg.com/mermaid@11/dist/mermaid.min.js";
+
+                fallbackScript.onload = () => {
+                    console.log("Mermaid library loaded from fallback CDN");
+                    resolve();
+                };
+
+                fallbackScript.onerror = () => {
+                    reject(
+                        new Error(
+                            "Failed to load Mermaid from both primary and fallback CDNs",
+                        ),
+                    );
+                };
+
+                document.head.appendChild(fallbackScript);
+            };
+
+            document.head.appendChild(script);
+        });
+    }
+
+    // 主初始化函数
+    async function initialize() {
+        try {
+            // 首先检查是否有 Mermaid 图表
+            const mermaidElements = document.querySelectorAll(
+                ".mermaid[data-mermaid-code]",
+            );
+            if (mermaidElements.length === 0) {
+                return;
+            }
+
+            // 设置监听器
+            setupMutationObserver();
+            setupEventListeners();
+
+            // 初始化主题状态
+            initializeThemeState();
+
+            // 加载并初始化 Mermaid
+            await loadMermaid();
+            await initializeMermaid();
+        } catch (error) {
+            console.error("Failed to initialize Mermaid system:", error);
+        }
+    }
+
+    // 启动初始化
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initialize);
+    } else {
+        initialize();
+    }
+})();
+</script></div>
+<p>两个容易被忽略、但很关键的设计：</p>
+<p><strong>取消发生在提交之前。</strong> <code>agent/request</code> 和 <code>prepareCall()</code> 先解析实际路由，<strong>再</strong>提交系统提示词和已接纳的用户消息。在任一异步阶段取消，这两者都不会被提交——不会留下「用户消息进了日志、请求却没发出去」的脏状态。</p>
+<p><strong>模型可见即已记录。</strong> 这是一条带运行时断言的不变量：抵达模型请求的一切都必须能从会话日志重建。它的直接后果是——新增一项模型可见输入，就必须新增一个会话事件。</p>
+<h2 id="cordis-内核"><a href="#cordis-内核">Cordis 内核</a><a href="#cordis-内核" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="cordis-内核"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>Cordis 不是 dsh 现攒的。它 2022 年就有了，作者说名字取自拉丁语的「心」——这颗心一共 2,693 行。</p>
+<p>插件作者要知道的东西可以压成三句话：</p>
+<ol>
+<li><strong>插件就是一个函数</strong>，Cordis 调用它的时候递给你一个 <code>ctx</code>。</li>
+<li><strong>服务住在 <code>ctx</code> 的稳定键上</strong>，别人按 key 找你，不 import 你。</li>
+<li><strong>所有注册都是可撤销的副作用</strong>，插件卸载时自动回滚。</li>
+</ol>
+<p>第三条是全部的重点。</p>
+<h3 id="获取与释放写在一处"><a href="#获取与释放写在一处">获取与释放写在一处</a><a href="#获取与释放写在一处" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="获取与释放写在一处"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>对于 Cordis 还管不到的资源（定时器、连接、watcher），包进 <code>ctx.effect()</code> 并返回释放函数：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line" data-line="1"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#D73A49;--shiki-dark:#F97583"> type</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { Context } </span><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '@deepseek-ai/cordis'</span></span>
+<span class="line" data-line="2"></span>
+<span class="line" data-line="3"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#D73A49;--shiki-dark:#F97583"> const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> name</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'heartbeat'</span></span>
+<span class="line" data-line="4"></span>
+<span class="line" data-line="5"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#D73A49;--shiki-dark:#F97583"> function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">ctx</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Context</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="6"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ctx.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">effect</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(() </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line" data-line="7"><span style="color:#D73A49;--shiki-dark:#F97583">    const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> timer</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> setInterval</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(() </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">log</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'tick'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">), </span><span style="color:#005CC5;--shiki-dark:#79B8FF">200</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line" data-line="8"><span style="color:#D73A49;--shiki-dark:#F97583">    return</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> () </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line" data-line="9"><span style="color:#6F42C1;--shiki-dark:#B392F0">      clearInterval</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(timer)</span></span>
+<span class="line" data-line="10"><span style="color:#24292E;--shiki-dark:#E1E4E8">      console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">log</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'heartbeat cleaned up'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line" data-line="11"><span style="color:#24292E;--shiki-dark:#E1E4E8">    }</span></span>
+<span class="line" data-line="12"><span style="color:#24292E;--shiki-dark:#E1E4E8">  })</span></span>
+<span class="line" data-line="13"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre></div>
+<p>对比一下 VSCode 的 <code>activate</code> / <code>deactivate</code>：那套 API 把副作用的创建和销毁分在两个函数里，作者得自己记住配对——论文管这叫<strong>违反关注点局部性</strong>，并指出它让「完整清理」难以验证。<code>ctx.effect()</code> 的形状强制两者写在一处。</p>
+<p>大部分时候你甚至不用手写它，因为内置 API 本身就是 effect：<code>ctx.on()</code> 的监听器会在卸载时移除，<code>ctx.plugin()</code> 的子插件随父插件一起释放，<code>ctx.tools.register(...)</code> 也会把释放函数附到调用插件上。</p>
+<blockquote>
+<p>有个坑：释放函数按注册的<strong>逆序</strong>启动，但多个<strong>异步</strong>释放函数会并发跑。如果拆除步骤必须严格有序，把它们放进同一个释放函数里依次 await。</p>
+</blockquote>
+<h3 id="依赖消失就下线"><a href="#依赖消失就下线">依赖消失就下线</a><a href="#依赖消失就下线" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="依赖消失就下线"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>服务用 <code>Service</code> 子类提供，消费方用 <code>inject</code> 声明：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line" data-line="1"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#D73A49;--shiki-dark:#F97583"> const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> name</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'consumer'</span></span>
+<span class="line" data-line="2"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#D73A49;--shiki-dark:#F97583"> const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> inject</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'greeter'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line" data-line="3"></span>
+<span class="line" data-line="4"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#D73A49;--shiki-dark:#F97583"> function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">ctx</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Context</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="5"><span style="color:#6A737D;--shiki-dark:#6A737D">  // 声明了 greeter，进到 apply 就保证 ctx.greeter 已就绪</span></span>
+<span class="line" data-line="6"><span style="color:#24292E;--shiki-dark:#E1E4E8">  console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">log</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(ctx.greeter.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">greet</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'world'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">))</span></span>
+<span class="line" data-line="7"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre></div>
+<p>关键在这句：<strong><code>inject</code> 不是一次性的启动检查</strong>。应用运行期间所需服务消失了——提供方被卸载或热替换——每个依赖插件也会跟着卸载，等服务回来再重新加载。</p>
+<p>这正是「配置里能换服务」的原因：卸载 <code>dsh-bash-local</code>，挂上另一个 <code>shell</code> 提供方，所有 <code>inject: ['shell']</code> 的插件重启并用上新实现。</p>
+<p>软依赖则不写 <code>inject</code>，在用的地方探测就行：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line" data-line="1"><span style="color:#D73A49;--shiki-dark:#F97583">const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> greeter</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> ctx.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">get</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'greeter'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)   </span><span style="color:#6A737D;--shiki-dark:#6A737D">// 没有提供方时是 undefined，插件照样运行</span></span>
+<span class="line" data-line="2"><span style="color:#24292E;--shiki-dark:#E1E4E8">console.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">log</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(greeter?.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">greet</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'maybe'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">??</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'no greeter available'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">)</span></span></code></pre></div>
+<h3 id="fiber-状态机"><a href="#fiber-状态机">Fiber 状态机</a><a href="#fiber-状态机" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="fiber-状态机"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>每个已加载的插件实例都有一个 <strong>fiber</strong>，即运行时句柄。</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 760 340" role="img" aria-label="Cordis fiber 状态机及其与论文生命周期状态的对照">
+  <defs>
+    <marker id="hpDshArrD" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head"></path>
+    </marker>
+    <marker id="hpDshArrDR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head-accent"></path>
+    </marker>
+  </defs>
+  <text x="30" y="28" class="hp-t-title">Cordis 实现（FiberState）</text>
+  <rect x="20" y="46" width="118" height="50" rx="7" class="hp-node-muted"></rect>
+  <text x="79" y="70" text-anchor="middle" class="hp-t-title-sm">PENDING</text>
+  <text x="79" y="87" text-anchor="middle" class="hp-t-sub-xs">依赖未就绪</text>
+  <rect x="180" y="46" width="118" height="50" rx="7" class="hp-node"></rect>
+  <text x="239" y="70" text-anchor="middle" class="hp-t-title-sm">LOADING</text>
+  <text x="239" y="87" text-anchor="middle" class="hp-t-sub-xs">apply 正在跑</text>
+  <rect x="340" y="46" width="118" height="50" rx="7" class="hp-node-accent"></rect>
+  <text x="399" y="70" text-anchor="middle" class="hp-t-accent-sm">ACTIVE</text>
+  <text x="399" y="87" text-anchor="middle" class="hp-t-sub-xs">effect 已装好</text>
+  <rect x="500" y="46" width="118" height="50" rx="7" class="hp-node"></rect>
+  <text x="559" y="70" text-anchor="middle" class="hp-t-title-sm">UNLOADING</text>
+  <text x="559" y="87" text-anchor="middle" class="hp-t-sub-xs">disposer 逆序跑</text>
+  <rect x="660" y="46" width="80" height="50" rx="7" class="hp-node-muted"></rect>
+  <text x="700" y="70" text-anchor="middle" class="hp-t-title-sm">DISPOSED</text>
+  <text x="700" y="87" text-anchor="middle" class="hp-t-sub-xs">已拆干净</text>
+  <line x1="138" y1="71" x2="176" y2="71" class="hp-arrow" marker-end="url(#hpDshArrD)"></line>
+  <line x1="298" y1="71" x2="336" y2="71" class="hp-arrow" marker-end="url(#hpDshArrD)"></line>
+  <line x1="458" y1="71" x2="496" y2="71" class="hp-arrow" marker-end="url(#hpDshArrD)"></line>
+  <line x1="618" y1="71" x2="656" y2="71" class="hp-arrow" marker-end="url(#hpDshArrD)"></line>
+  <path d="M 560 110 C 560 152, 240 152, 240 110" class="hp-accent-line" marker-end="url(#hpDshArrDR)"></path>
+  <text x="400" y="148" text-anchor="middle" class="hp-t-accent-xs">HMR：先卸载，再用新代码重新加载</text>
+  <rect x="180" y="168" width="118" height="42" rx="7" class="hp-node-red"></rect>
+  <text x="239" y="194" text-anchor="middle" class="hp-t-red">FAILED</text>
+  <path d="M 239 96 L 239 164" class="hp-arrow-dashed" marker-end="url(#hpDshArrD)"></path>
+  <text x="306" y="192" class="hp-t-sub">apply 或配置校验抛异常</text>
+  <line x1="20" y1="234" x2="740" y2="234" class="hp-grid"></line>
+  <text x="30" y="258" class="hp-t-title">论文里的生命周期状态（Definition 49）与九条规则</text>
+  <text x="30" y="282" class="hp-t-body">Inactive ──O-Insert/L-Begin──▶ Reloading ──L-Finish──▶ Active ──L-Leave──▶ Unloading ──L-Unload──▶ Inactive</text>
+  <text x="30" y="304" class="hp-t-sub">Reloading 里 L-Iter 逐步推进 effect 迭代器；L-Divert 表示依赖在装载途中变了，转去卸载</text>
+  <text x="30" y="322" class="hp-t-sub">O-Retire 只写退休标志、在四个状态上都适用，所以图上省略；O-Remove 才把条目从注册表拿掉</text>
+</svg>
+</div>
+<p><em>上下两半是同一个状态机：论文的 <code>Reloading</code> 就是实现里的 <code>LOADING</code></em></p>
+<p>PENDING 是个正常状态，不是错误——提供方可能稍后才挂上。这也是「为什么我的插件没输出」最常见的答案。</p>
+<p>热替换就是这台状态机跑一圈：卸载释放 effect，加载遵循依赖，中间把模块代码换掉而已，不需要开发者标注任何「接受边界」。</p>
+<p>插件之间通信走类型化事件，一共五种分发模式：</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>模式</th><th>是否 await</th><th>有返回值</th><th>典型用途</th></tr></thead><tbody><tr><td><code>emit</code></td><td>否</td><td>否</td><td>广播通知</td></tr><tr><td><code>waterfall</code></td><td>否</td><td>是</td><td>环绕中间件，可包装可短路</td></tr><tr><td><code>parallel</code></td><td>是</td><td>否</td><td>并行扇出</td></tr><tr><td><code>serial</code></td><td>是</td><td>是</td><td>按序执行</td></tr><tr><td><code>bail</code></td><td>否</td><td>是</td><td>停在首个 bail 值</td></tr></tbody></table></div>
+<p>其中 <code>waterfall</code> 最有意思：监听器收到 <code>(...args, next)</code>，调 <code>next()</code> 执行下游，不调就是短路。dsh 的 <code>agent/pre-step</code>、<code>agent/request</code>、<code>llm/stream</code> 和三个 <code>tools/*</code> 都是它——于是「权限门禁」「超时」「指标采集」这类横切关注点能自然地一层层叠起来。</p>
+<h2 id="自进化的两道坎"><a href="#自进化的两道坎">自进化的两道坎</a><a href="#自进化的两道坎" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="自进化的两道坎"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>铺垫到这里，可以进正题了。</p>
+<p>软件世界有个反直觉的事实：大多数插件系统，<strong>卸载一个插件要重启整个宿主进程</strong>。删掉的可能只是一个插件，陪着它一起重启的却是所有插件。</p>
+<p>说是「插」件，实际上插上去就拔不下来。</p>
+<p>VSCode 是典型案例。论文自己去 Marketplace 数过（2026 年 6 月 9 日）：按安装量排名前 100 的扩展里，<strong>87 个含可执行代码</strong>，一旦激活就没法在运行时单独卸载。而声明了对非内置扩展依赖的，只有 <strong>7 个</strong>——后一个数字说明的不是「大家不需要依赖」，而是 API 形状根本没鼓励依赖。</p>
+<p>放在普通软件里，这最多算麻烦，重启一下也就过去了。</p>
+<p>但 agent 不一样。</p>
+<p>论文切入自进化的角度是这样的：未来的 harness 可能一边服务请求，一边自己生成一个工具、自己装进运行时、发现有问题再自己把它换掉。如果每改一行都要重启整个进程，之前攒的上下文和缓存全得重来；更糟的是，一次有缺陷的自我修改，可能把「用来恢复的那个进程」本身搞挂。</p>
+<p>这是<strong>时间</strong>上的那道坎。</p>
+<p>如果模块之间的依赖靠各自打补丁——今天检查一下有没有 A，明天猜一下 B——迟早会引入循环依赖，等到 reload 的时候才爆。</p>
+<p>这是<strong>空间</strong>上的那道坎。</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 760 400" role="img" aria-label="时间可组合性与空间可组合性的二维定位图">
+  <defs>
+    <marker id="hpDshArrE" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head"></path>
+    </marker>
+  </defs>
+  <line x1="90" y1="340" x2="700" y2="340" class="hp-axis" marker-end="url(#hpDshArrE)"></line>
+  <line x1="90" y1="340" x2="90" y2="40" class="hp-axis" marker-end="url(#hpDshArrE)"></line>
+  <text x="700" y="366" text-anchor="end" class="hp-t-title-sm">空间可组合性 → 声明并响应依赖</text>
+  <text x="76" y="36" class="hp-t-title-sm">时间</text>
+  <text x="76" y="52" class="hp-t-title-sm">可组合性</text>
+  <text x="76" y="68" class="hp-t-sub">撤销副作用</text>
+  <line x1="90" y1="190" x2="700" y2="190" class="hp-grid"></line>
+  <line x1="395" y1="40" x2="395" y2="340" class="hp-grid"></line>
+  <circle cx="180" cy="288" r="7" class="hp-node-red"></circle>
+  <text x="196" y="284" class="hp-t-red">VSCode 扩展宿主</text>
+  <text x="196" y="301" class="hp-t-sub">前 100 个扩展里 87 个带可执行代码，</text>
+  <text x="196" y="316" class="hp-t-sub">卸载任何一个都要重启宿主；只有 7 个声明依赖</text>
+  <circle cx="250" cy="120" r="7" class="hp-node"></circle>
+  <text x="266" y="116" class="hp-t-title-sm">RAII / bracket 模式</text>
+  <text x="266" y="132" class="hp-t-sub">静态：时间维退化为词法作用域</text>
+  <circle cx="600" cy="290" r="7" class="hp-node"></circle>
+  <text x="596" y="286" text-anchor="end" class="hp-t-title-sm">模块 import 解析</text>
+  <text x="596" y="302" text-anchor="end" class="hp-t-sub">静态：空间维退化为导入解析</text>
+  <circle cx="420" cy="210" r="7" class="hp-node-blue"></circle>
+  <text x="436" y="206" class="hp-t-blue">进程 + 容器编排</text>
+  <text x="436" y="222" class="hp-t-sub">粗粒度替代品：重启丢掉全部进程内状态，</text>
+  <text x="436" y="237" class="hp-t-sub">重建要数秒到数分钟；跨进程依赖付网络开销</text>
+  <circle cx="620" cy="90" r="9" class="hp-pill-accent"></circle>
+  <text x="606" y="86" text-anchor="end" class="hp-t-accent-sm">Cordis</text>
+  <text x="606" y="103" text-anchor="end" class="hp-t-sub">与组件同粒度地管理副作用与依赖</text>
+</svg>
+</div>
+<p><em>静态设定下，这两维分别退化成词法作用域和 import 解析；一旦动态，两个都变难</em></p>
+<p>那「重启就好了」这个万能答案呢？论文的回应很干脆：操作系统在<strong>进程</strong>粒度上给你时间可组合性，容器编排在<strong>服务</strong>粒度上给你空间可组合性——可现代软件的组合粒度早就细到进程以下了。粒度对不上的代价，就是每次重启丢光进程内状态（缓存、连接、部分计算），重建要数秒到数分钟，为了维持可用性还得堆冗余副本。</p>
+<h2 id="deepseek-的解法"><a href="#deepseek-的解法">DeepSeek 的解法</a><a href="#deepseek-的解法" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="deepseek-的解法"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>论文的技术路线可以一句话概括：把编译期的 effect / coeffect 概念，搬到运行时。</p>
+<ul>
+<li>**effect（效应）**刻画程序对世界的影响；</li>
+<li>**coeffect（余效应）**刻画世界对程序的约束。</li>
+</ul>
+<p>一个管「你改了什么」，一个管「你需要什么」。刚好对上前面两道坎。</p>
+<h3 id="时间维可逆-effect"><a href="#时间维可逆-effect">时间维：可逆 effect</a><a href="#时间维可逆-effect" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="时间维可逆-effect"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>核心定义只有一句：<strong>每个对上下文的修改，都必须配一个显式的逆函数。</strong></p>
+<p>加载插件时，每改一次状态就把对应的逆记下来，按顺序叠成一条撤销链；卸载时反向执行这条链，系统状态就精确回到插件装上之前的样子。</p>
+<p>像一摞盘子——最后放上去的那只，先拿走。</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 760 300" role="img" aria-label="track 与 recover 的交换图：上层是原始上下文，下层是带累积器的效应上下文">
+  <defs>
+    <marker id="hpDshArrF" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head"></path>
+    </marker>
+    <marker id="hpDshArrFA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="hp-arrow-head-accent"></path>
+    </marker>
+  </defs>
+  <text x="30" y="30" class="hp-t-sub">Γ（只有状态）</text>
+  <rect x="110" y="48" width="120" height="40" rx="6" class="hp-node"></rect>
+  <text x="170" y="73" text-anchor="middle" class="hp-t-body">γ₀</text>
+  <rect x="330" y="48" width="120" height="40" rx="6" class="hp-node"></rect>
+  <text x="390" y="73" text-anchor="middle" class="hp-t-body">γ₁ = f₁(γ₀)</text>
+  <rect x="550" y="48" width="140" height="40" rx="6" class="hp-node"></rect>
+  <text x="620" y="73" text-anchor="middle" class="hp-t-body">γ₂ = f₂(γ₁)</text>
+  <line x1="230" y1="68" x2="326" y2="68" class="hp-arrow" marker-end="url(#hpDshArrF)"></line>
+  <text x="278" y="60" text-anchor="middle" class="hp-t-sub">f₁</text>
+  <line x1="450" y1="68" x2="546" y2="68" class="hp-arrow" marker-end="url(#hpDshArrF)"></line>
+  <text x="498" y="60" text-anchor="middle" class="hp-t-sub">f₂</text>
+  <line x1="170" y1="88" x2="170" y2="158" class="hp-arrow-dashed" marker-end="url(#hpDshArrF)"></line>
+  <line x1="390" y1="88" x2="390" y2="158" class="hp-arrow-dashed" marker-end="url(#hpDshArrF)"></line>
+  <line x1="620" y1="88" x2="620" y2="158" class="hp-arrow-dashed" marker-end="url(#hpDshArrF)"></line>
+  <text x="182" y="128" class="hp-t-sub-xs">track</text>
+  <text x="402" y="128" class="hp-t-sub-xs">track</text>
+  <text x="632" y="128" class="hp-t-sub-xs">track</text>
+  <text x="30" y="182" class="hp-t-accent-sm">∂Γ</text>
+  <text x="30" y="199" class="hp-t-sub">状态+累积器</text>
+  <rect x="110" y="162" width="120" height="44" rx="6" class="hp-node-accent"></rect>
+  <text x="170" y="189" text-anchor="middle" class="hp-t-body">(γ₀, id)</text>
+  <rect x="330" y="162" width="120" height="44" rx="6" class="hp-node-accent"></rect>
+  <text x="390" y="189" text-anchor="middle" class="hp-t-body">(γ₁, g₁)</text>
+  <rect x="550" y="162" width="140" height="44" rx="6" class="hp-node-accent"></rect>
+  <text x="620" y="189" text-anchor="middle" class="hp-t-body">(γ₂, g₁ ∘ g₂)</text>
+  <line x1="230" y1="184" x2="326" y2="184" class="hp-accent-line" marker-end="url(#hpDshArrFA)"></line>
+  <text x="278" y="176" text-anchor="middle" class="hp-t-accent-xs">f₁′</text>
+  <line x1="450" y1="184" x2="546" y2="184" class="hp-accent-line" marker-end="url(#hpDshArrFA)"></line>
+  <text x="498" y="176" text-anchor="middle" class="hp-t-accent-xs">f₂′</text>
+  <path d="M 620 210 C 620 264, 170 264, 170 210" class="hp-accent-line" marker-end="url(#hpDshArrFA)"></path>
+  <text x="395" y="258" text-anchor="middle" class="hp-t-accent-sm">recover：一步回到 (γ₀, id)</text>
+  <text x="395" y="286" text-anchor="middle" class="hp-t-sub">健全性不变量 φ(γ) = γ₀；逆按 LIFO 顺序累积，正向行为完全不受追踪影响</text>
+</svg>
+</div>
+<p><em>形式上，上下文从「只有状态」变成了「状态 + 撤销链」</em></p>
+<p>想看一眼数学长什么样的话（跳过完全不影响阅读）：论文把上下文类型从 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Γ</mi></mrow><annotation encoding="application/x-tex">\Gamma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">Γ</span></span></span></span> 抬成</p>
+<p><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">∂</mi><mi mathvariant="normal">Γ</mi><mo><mi mathvariant="normal">≔</mi></mo><mi mathvariant="normal">Γ</mi><mo>×</mo><mo stretchy="false">(</mo><mi mathvariant="normal">Γ</mi><mo>→</mo><mi mathvariant="normal">Γ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\partial\Gamma \coloneqq \Gamma \times (\Gamma \to \Gamma)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord" style="margin-right:0.0556em;">∂</span><span class="mord">Γ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel"><span class="mrel"><span class="mop" style="position:relative;top:-0.0347em;">:</span></span><span class="mrel"><span class="mspace" style="margin-right:-0.0667em;"></span></span><span class="mrel">=</span></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord">Γ</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">Γ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">Γ</span><span class="mclose">)</span></span></span></span></p>
+<p>也就是一对 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>γ</mi><mo separator="true">,</mo><mi>φ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(\gamma, \varphi)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.0556em;">γ</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">φ</span><span class="mclose">)</span></span></span></span>，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>γ</mi></mrow><annotation encoding="application/x-tex">\gamma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.0556em;">γ</span></span></span></span> 是当前状态，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>φ</mi></mrow><annotation encoding="application/x-tex">\varphi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">φ</span></span></span></span> 就是那条撤销链。后面一串定理都在证同一件事：追踪不改变正向行为，而且只要每个逆都真的能撤销它对应的副作用，恢复就一定回到起点。</p>
+<p>这里有条必须说清楚的边界：<strong>运行时并不校验这件事</strong>。回调交上来一个逆，但「这个逆真的撤销了那个副作用」是组件作者的义务，不是运行时验证的性质。Cordis 给你的是一套结构和纪律，不是一个证明器。</p>
+<h3 id="空间维反应式-coeffect"><a href="#空间维反应式-coeffect">空间维：反应式 coeffect</a><a href="#空间维反应式-coeffect" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="空间维反应式-coeffect"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>组件声明自己需要哪些依赖。比如一个聊天插件说，我要一个消息适配器和一个数据库——两个都在，它才进入 ACTIVE；缺一个，它就老实待着，不急着启动，也不会先跑起来再因为空引用报错。</p>
+<p>反过来也成立：提供方出现，依赖方自动激活；提供方要撤走，依赖方先停下来、把自己的 effect 撤回，提供方才完成卸载。</p>
+<p>这套拓扑编排不靠开发者手写，是从声明里推出来的。</p>
+<div class="hp hp-diagram">
+<svg viewBox="0 0 760 250" role="img" aria-label="notify 把每次上下文变化分类为激活、停用或中性">
+  <text x="30" y="28" class="hp-t-title">notify_d(σ, σ′)：拿组件声明的规约 d 去分类每一次状态转移</text>
+  <rect x="30" y="48" width="222" height="150" rx="8" class="hp-node-green"></rect>
+  <text x="141" y="76" text-anchor="middle" class="hp-t-green">activating</text>
+  <text x="141" y="102" text-anchor="middle" class="hp-t-body">σ ⊭ d  ∧  σ′ ⊧ d</text>
+  <line x1="54" y1="118" x2="228" y2="118" class="hp-grid"></line>
+  <text x="141" y="142" text-anchor="middle" class="hp-t-sub">依赖刚刚齐了</text>
+  <text x="141" y="162" text-anchor="middle" class="hp-t-sub">→ 执行组件的 effect</text>
+  <text x="141" y="180" text-anchor="middle" class="hp-t-sub">并按 §3.1 追踪它们</text>
+  <rect x="269" y="48" width="222" height="150" rx="8" class="hp-node-red"></rect>
+  <text x="380" y="76" text-anchor="middle" class="hp-t-red">deactivating</text>
+  <text x="380" y="102" text-anchor="middle" class="hp-t-body">σ ⊧ d  ∧  σ′ ⊭ d</text>
+  <line x1="293" y1="118" x2="467" y2="118" class="hp-grid"></line>
+  <text x="380" y="142" text-anchor="middle" class="hp-t-sub">依赖刚刚缺了</text>
+  <text x="380" y="162" text-anchor="middle" class="hp-t-sub">→ 应用累积器 φ 回滚，</text>
+  <text x="380" y="180" text-anchor="middle" class="hp-t-sub">该组件装的东西全部撤掉</text>
+  <rect x="508" y="48" width="222" height="150" rx="8" class="hp-node-muted"></rect>
+  <text x="619" y="76" text-anchor="middle" class="hp-t-title-sm">neutral</text>
+  <text x="619" y="102" text-anchor="middle" class="hp-t-body">其余情况</text>
+  <line x1="532" y1="118" x2="706" y2="118" class="hp-grid"></line>
+  <text x="619" y="142" text-anchor="middle" class="hp-t-sub">满足状态没变</text>
+  <text x="619" y="162" text-anchor="middle" class="hp-t-sub">→ 什么都不做</text>
+  <text x="30" y="228" class="hp-t-sub">局部空间可组合性：组件只在满足规约的状态下激活（永不读到缺失绑定），而任何变化都会被分类，满足性一旦丢失就地触发停用</text>
+</svg>
+</div>
+<p><em>这就是 <code>inject</code> 在运行期持续生效、而不是只做一次启动检查的形式化解释</em></p>
+<p>论文很克制地指出，这条只给出<strong>局部</strong>保证。「撤回一个绑定要等它引发的停用全部完成」和「激活期间读到的绑定不能被挪走」这两件事它管不了——因为那是对<strong>别的</strong>组件的约束，得留到全局的元理论里去证。</p>
+<h3 id="理论与代码的对照"><a href="#理论与代码的对照">理论与代码的对照</a><a href="#理论与代码的对照" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="理论与代码的对照"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>论文第 5 节有张理论与实现的对照表，是读源码时最有用的东西。摘几行：</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>论文里的东西</th><th>代码里的东西</th></tr></thead><tbody><tr><td>统一上下文 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="normal">Γ</mi><mi mathvariant="normal">∞</mi></msub></mrow><annotation encoding="application/x-tex">\Gamma_\infty</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord">Γ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">∞</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></td><td><code>ctx</code></td></tr><tr><td>可逆 effect <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">e</mi><mi mathvariant="normal">f</mi><mi mathvariant="normal">f</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi></mrow><mi mathvariant="normal">Γ</mi></msub><mo stretchy="false">(</mo><mi>e</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\mathrm{effect}_\Gamma(e)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord"><span class="mord mathrm">effect</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">Γ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">e</span><span class="mclose">)</span></span></span></span></td><td><code>ctx.effect(callback)</code></td></tr><tr><td>组件实例（fiber）</td><td><code>fiber</code></td></tr><tr><td>coeffect 规约 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span></span></span></span></td><td><code>fiber.inject</code></td></tr><tr><td>累积器 / recover</td><td><code>fiber.dispose</code></td></tr><tr><td>生命周期状态 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>θ</mi></mrow><annotation encoding="application/x-tex">\theta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.0278em;">θ</span></span></span></span></td><td><code>fiber.state</code></td></tr></tbody></table></div>
+<p><code>ctx.effect</code> 的实现思路也不复杂：每次迭代把新的逆<strong>前插</strong>进累积器（于是恢复天然是 LIFO），<code>dispose</code> 用一个 <code>armed</code> 标志保证至多触发一次，最后把自己的释放函数挂到父上下文的累积器上——<strong>子 effect 的逆，本身又是父上的一个 effect</strong>。整套设计的递归结构就是这么来的。</p>
+<h2 id="实证koishi"><a href="#实证koishi">实证：Koishi</a><a href="#实证koishi" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="实证koishi"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>论文的实证部分不是跑分，是一个聊天机器人框架。</p>
+<p>Koishi 基于 Cordis 构建，四年积累了 4000 多个社区插件，从 IM 适配器、数据库驱动到管理控制台和各类终端功能。顺带一提，它的名字和图标来自东方 Project 里的古明地恋；而论文一作正是 Koishi 的作者。</p>
+<p>论文从中读出三件事：</p>
+<ul>
+<li><strong>表达力与通用性</strong>：Koishi 的每个功能都是插件，框架本身只贡献聊天机器人的领域词汇。而且同一套模型在完全不同的运行时里复现了一遍——Koishi 的 Web 控制台是<strong>第二个独立的 Cordis 应用</strong>，它的插件组合的是浏览器和 UI 的原语。</li>
+<li><strong>零认知负担</strong>：从控制台禁用一个插件，它的影响就地撤回，其他插件继续工作；开发时保存即热重载，别处的缓存和连接纹丝不动。哪怕没经验的作者也不用写卸载路径——正确性从「靠每个人自觉」变成了「由抽象一次性兑现」。</li>
+<li><strong>开放生态</strong>：切换存储后端或重连适配器时，只有解析到的依赖真的变了的插件才会重新激活。这些插件通常出自不同作者之手，彼此唯一的协调就是那个 coeffect。</li>
+</ul>
+<p>论文也没把它包装成完美 demo：单一生态、单一语言，是观察性的而非对照实验，抽象开销和对生产力的影响都还没量化——这些是它自己写的。</p>
+<h2 id="写一个工具插件"><a href="#写一个工具插件">写一个工具插件</a><a href="#写一个工具插件" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="写一个工具插件"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>跑起来只要一条命令：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="bash"><code><span class="line" data-line="1"><span style="color:#6F42C1;--shiki-dark:#B392F0">npx</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> @deepseek-ai/dsh</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> web</span></span></code></pre></div>
+<p>默认在 <code>127.0.0.1:3080</code>（明文 http）起 Web UI，本机启动时会顺手打开浏览器。</p>
+<p>工具是最常见的扩展点，最小形态长这样：</p>
+<div class="not-prose code-wrapper"><pre class="astro-code astro-code-themes github-light github-dark" style="background-color:#fff;--shiki-dark-bg:#24292e;color:#24292e;--shiki-dark:#e1e4e8; overflow-x: auto;" tabindex="0" data-language="ts"><code><span class="line" data-line="1"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { readFile } </span><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'node:fs/promises'</span></span>
+<span class="line" data-line="2"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#D73A49;--shiki-dark:#F97583"> type</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { Context } </span><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '@deepseek-ai/cordis'</span></span>
+<span class="line" data-line="3"><span style="color:#D73A49;--shiki-dark:#F97583">import</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> { defineTool } </span><span style="color:#D73A49;--shiki-dark:#F97583">from</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> '@deepseek-ai/dsh-tools'</span></span>
+<span class="line" data-line="4"></span>
+<span class="line" data-line="5"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#D73A49;--shiki-dark:#F97583"> const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> name</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#032F62;--shiki-dark:#9ECBFF"> 'my-tool'</span></span>
+<span class="line" data-line="6"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#D73A49;--shiki-dark:#F97583"> const</span><span style="color:#005CC5;--shiki-dark:#79B8FF"> inject</span><span style="color:#D73A49;--shiki-dark:#F97583"> =</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [</span><span style="color:#032F62;--shiki-dark:#9ECBFF">'tools'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">]</span></span>
+<span class="line" data-line="7"></span>
+<span class="line" data-line="8"><span style="color:#D73A49;--shiki-dark:#F97583">export</span><span style="color:#D73A49;--shiki-dark:#F97583"> function</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> apply</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">ctx</span><span style="color:#D73A49;--shiki-dark:#F97583">:</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> Context</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="9"><span style="color:#24292E;--shiki-dark:#E1E4E8">  ctx.tools.</span><span style="color:#6F42C1;--shiki-dark:#B392F0">register</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#6F42C1;--shiki-dark:#B392F0">defineTool</span><span style="color:#24292E;--shiki-dark:#E1E4E8">({</span></span>
+<span class="line" data-line="10"><span style="color:#24292E;--shiki-dark:#E1E4E8">    name: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'read_file'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line" data-line="11"><span style="color:#24292E;--shiki-dark:#E1E4E8">    description: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Read a file from disk.'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">,          </span><span style="color:#6A737D;--shiki-dark:#6A737D">// 模型看到的就是这句</span></span>
+<span class="line" data-line="12"><span style="color:#24292E;--shiki-dark:#E1E4E8">    parameters: {</span></span>
+<span class="line" data-line="13"><span style="color:#24292E;--shiki-dark:#E1E4E8">      path: { type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'string'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, required: </span><span style="color:#005CC5;--shiki-dark:#79B8FF">true</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, description: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'Absolute path'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> },</span></span>
+<span class="line" data-line="14"><span style="color:#24292E;--shiki-dark:#E1E4E8">      limit: { type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'number'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> },                     </span><span style="color:#6A737D;--shiki-dark:#6A737D">// 默认可选</span></span>
+<span class="line" data-line="15"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line" data-line="16"><span style="color:#24292E;--shiki-dark:#E1E4E8">    output: {</span></span>
+<span class="line" data-line="17"><span style="color:#24292E;--shiki-dark:#E1E4E8">      schema: { type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'string'</span><span style="color:#24292E;--shiki-dark:#E1E4E8"> },</span></span>
+<span class="line" data-line="18"><span style="color:#6F42C1;--shiki-dark:#B392F0">      render</span><span style="color:#24292E;--shiki-dark:#E1E4E8">: (</span><span style="color:#E36209;--shiki-dark:#FFAB70">_args</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">value</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) </span><span style="color:#D73A49;--shiki-dark:#F97583">=></span><span style="color:#24292E;--shiki-dark:#E1E4E8"> [{ type: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'text'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, text: value }],</span></span>
+<span class="line" data-line="19"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line" data-line="20"><span style="color:#D73A49;--shiki-dark:#F97583">    async</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> execute</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(</span><span style="color:#E36209;--shiki-dark:#FFAB70">args</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, </span><span style="color:#E36209;--shiki-dark:#FFAB70">exec</span><span style="color:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line" data-line="21"><span style="color:#6A737D;--shiki-dark:#6A737D">      // args 由 schema 推导出类型：{ path: string; limit?: number }</span></span>
+<span class="line" data-line="22"><span style="color:#D73A49;--shiki-dark:#F97583">      return</span><span style="color:#6F42C1;--shiki-dark:#B392F0"> readFile</span><span style="color:#24292E;--shiki-dark:#E1E4E8">(args.path, { encoding: </span><span style="color:#032F62;--shiki-dark:#9ECBFF">'utf8'</span><span style="color:#24292E;--shiki-dark:#E1E4E8">, signal: exec.signal })</span></span>
+<span class="line" data-line="23"><span style="color:#24292E;--shiki-dark:#E1E4E8">    },</span></span>
+<span class="line" data-line="24"><span style="color:#24292E;--shiki-dark:#E1E4E8">  }))</span></span>
+<span class="line" data-line="25"><span style="color:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre></div>
+<p>把这段代码对回前面的概念：<code>inject = ['tools']</code> 就是 coeffect 声明，<code>apply</code> 就是 effect 函数，<code>ctx.tools.register(...)</code> 的注册是副作用——<strong>dispose 掉这个插件的 fiber，就等于注销这个工具</strong>，你不需要写任何卸载代码。schema 也会自动流进系统提示词的组装。</p>
+<p>两条 dsh 特有的约定值得记：参数在 <code>execute</code> 跑之前已经按 schema 校验过了；<code>execute</code> 只返回规范 JSON 值，给人看的解释放进 <code>output.render</code>。另外别把部署策略写进工具——允许／拒绝／询问用 <code>tools/pre-execute</code>，超时和指标用 <code>tools/execute</code>。</p>
+<h2 id="dsh-的四种模式"><a href="#dsh-的四种模式">dsh 的四种模式</a><a href="#dsh-的四种模式" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="dsh-的四种模式"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p>dsh 的「模式」在内部叫 <strong>preset</strong>：一个 <code>agent.cordis.yml</code> 文件，按会话挂载。换句话说——<strong>你在下拉框里选的那个模式，就是一份插件清单</strong>。</p>
+<p>随附四个：</p>
+<div class="article-table-scroll">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<table><thead><tr><th>模式</th><th>官方描述</th><th>它实际换掉了什么</th></tr></thead><tbody><tr><td>标准模式</td><td>功能完整的编码 Agent，支持文件编辑、Shell、文件与网页检索、Skills、计划、目标、子代理和工作流</td><td>基准线，每进程挂载一次</td></tr><tr><td>PTC 模式</td><td>同上，但默认不提供 <code>workflow</code> 工具；其余工具通过 PTC 模式 SDK 呈现</td><td>工具注册表的<strong>呈现方式</strong>——模型改用一个 TypeScript 程序组合多步操作</td></tr><tr><td>极简模式</td><td>仅提供持久 shell 的单工具编码 Agent</td><td>固定提示词、不注入运行时上下文、没有上下文压缩，给跑分用</td></tr><tr><td>创造模式</td><td>标准模式的全部能力，外加运行时检查、插件实验和 preset 创作指导</td><td>加上<strong>读写自己所运行的那个 runtime</strong> 的能力</td></tr></tbody></table></div>
+<p>PTC 模式那行值得解释一句：它换掉的不是工具本身，而是工具<strong>怎么呈现给模型</strong>。注册表被生成成一份 SDK，模型可以 <code>await tools.&#x3C;name>(args)</code> 直接调用，于是一段本来要五次往返的操作变成一次。</p>
+<h3 id="模式换不掉什么"><a href="#模式换不掉什么">模式换不掉什么</a><a href="#模式换不掉什么" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="模式换不掉什么"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>这里有个容易误会的地方。preset 是 <strong>agent 平面</strong>的组合，它能带来的只有三样东西：工具、提示词段落、skill。</p>
+<p>注册表本身、沙箱与审批栈、持久化、模型路由——这些属于 <strong>host 平面</strong>，preset 不许拥有。所以换模式不会顺带把你的权限策略换掉；同一个进程里可以跑着不同模式的会话，各自的状态互相隔离。</p>
+<p>两条配套规则：只有空会话能切换模式；subagent 会加入父方的组装，因此它看到的工具和提示词跟创建它的 agent 完全一样。</p>
+<p>还有个细节能看出这套东西有多严格：preset 里的 service 行<strong>必须</strong>放在带 <code>isolate</code> 的组里，否则它会发布到根 realm 变成进程全局的，第二个挂载同一 preset 的会话就会跟第一个撞车——<code>dsh-agent-presets</code> 在挂载时直接拒绝。</p>
+<h3 id="创造模式让-agent-去写-agent"><a href="#创造模式让-agent-去写-agent">创造模式：让 agent 去写 agent</a><a href="#创造模式让-agent-去写-agent" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="创造模式让-agent-去写-agent"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h3>
+<p>这个模式值得单拎出来，因为它就是前面那条自进化线的产品形态。</p>
+<p>它的 preset 文件开头写得很直白：存在的理由是「让一个人可以叫 agent 去写另一个 agent」。标准模式的东西一样不少，加的是自指的 Cordis 工具集、一个教你怎么写组合的 skill，以及一个会说明「这次改动属于哪个平面」的 persona。</p>
+<p>同一个文件里还有一段全大写的 TRUST 警告，我原样转述：<code>cordis_mount</code> 会对活跃运行时求值模型写的 JavaScript，而这个 agent 写出来的组合会成为别的会话挂载的 preset——<strong>把跑在这个模式上的会话当成 shell 访问来对待</strong>。</p>
+<p>论文里那句「未来的 harness 可能一边服务请求，一边自己生成并部署对自身组件的修改」，到这里就不是设想了，是下拉菜单里的一个选项。</p>
+<h2 id="总结"><a href="#总结">总结</a><a href="#总结" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="总结"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<p><strong>「一切皆插件」是有代价的。</strong> 65 万行 TypeScript、275 个 package.json，任何一个具体问题的调用路径都要穿过好几层服务和事件。dsh 自己的文档里那句「建议使用 agent 探索代码库并理解其架构」，读起来半是自信半是自嘲。</p>
+<p><strong>最值得偷的一课，其实和 agent 没什么关系。</strong> 是那个把「获取资源」和「释放资源」强制写在同一个闭包里的 <code>ctx.effect()</code>，以及「依赖消失就自动停用依赖方」的 <code>inject</code>。这两个东西跟 LLM 一点关系都没有，但你下次写任何一个需要动态加载模块的系统时，都会想起它们。</p>
+<h2 id="参考"><a href="#参考">参考</a><a href="#参考" class="heading-anchor-link" aria-label="复制标题链接" data-heading-id="参考"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="heading-anchor-icon heading-anchor-icon--check"><polyline points="20 6 9 17 4 12"></polyline></svg></a></h2>
+<ul>
+<li><a href="https://github.com/deepseek-ai/deepseek-harness" target="_blank" rel="noopener">deepseek-ai/deepseek-harness</a> — 仓库与文档（<code>docs/</code> 下架构、Cordis 入门、教程、能力图都有中文版）</li>
+<li><a href="https://www.deepseek.com/harness/en/" target="_blank" rel="noopener">DeepSeek Harness 官方页面</a></li>
+<li><a href="https://github.com/cordiverse/cordis" target="_blank" rel="noopener">cordiverse/cordis</a> · <a href="https://github.com/cordiverse/paper" target="_blank" rel="noopener">cordiverse/paper</a></li>
+<li><a href="https://github.com/koishijs/koishi" target="_blank" rel="noopener">koishijs/koishi</a> — 论文里的实证案例</li>
+<li>Yifan Shi, Wei Zhang, Tianyi Cui. <a href="https://arxiv.org/abs/2608.25512" target="_blank" rel="noopener"><em>A Programming Paradigm for Spatiotemporal Composability</em></a>. arXiv:2608.25512, 2026-08-26.</li>
+</ul> </div> </div> <div data-reward-root class="reward-container relative"> <button class="reward-like-btn" data-reward-like data-article-id="36575ab8dc2f2168" data-server-url="https://api.wqlblog.cn" aria-label="Like this post" title="Like"> <svg class="reward-like-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"> <path d="M7 10v12"></path> <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"></path> </svg> <span class="reward-like-count">—</span> </button> <p class="reward-line">
+如果这篇对你有帮助，可以
+<span class="reward-trigger inline-block" data-reward-open role="status" aria-expanded="false">请我喝杯咖啡</span> </p> <p class="reward-license">
+本文采用
+<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener noreferrer license" class="no-underline">CC BY-NC-SA 4.0</a>
+协议，转载请注明出处
+</p> <div class="reward-popover invisible absolute left-0 right-0 mx-auto bottom-full mb-3 w-[500px] max-w-[90vw] pointer-events-none z-[9999]" data-reward-popover aria-hidden="true"> <div class="rounded-2xl p-4" style="border: 1px solid var(--theme-border); background: var(--theme-surface-elevated); box-shadow: var(--theme-shadow-md)"> <img src="/img/donate.png" alt="Donation QR code" class="mx-auto w-full h-auto rounded-lg"> <p class="text-center text-sm mt-2" style="color: var(--theme-muted)">Thank you for your support!</p> </div> </div> </div> <script type="module">function r(){document.querySelectorAll("[data-reward-root]").forEach(t=>{if(!(t instanceof HTMLElement)||t.dataset.rewardInitialized==="1")return;const a=t.querySelector("[data-reward-open]"),e=t.querySelector("[data-reward-popover]");if(a&&e instanceof HTMLElement){let n;const d=()=>{clearTimeout(n),e.classList.add("reward-popover-open"),e.setAttribute("aria-hidden","false"),a.setAttribute("aria-expanded","true")},o=()=>{n=setTimeout(()=>{e.classList.remove("reward-popover-open"),e.setAttribute("aria-hidden","true"),a.setAttribute("aria-expanded","false")},100)};a.addEventListener("mouseenter",d),e.addEventListener("mouseenter",d),a.addEventListener("mouseleave",o),e.addEventListener("mouseleave",o),t.dataset.rewardInitialized="1"}})}r();document.addEventListener("astro:page-load",r);document.addEventListener("astro:after-swap",r);</script> <!-- 上一篇 / 下一篇 --><nav class="article-post-nav"> <a href="/posts/尝试在本地部署大模型：4×3090_跑_Qwen3.8-27B/" class="post-nav-link post-nav-prev"> <span class="post-nav-label"> <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+上一篇
+</span> <span class="post-nav-title">尝试在本地部署大模型：4×3090 跑 Qwen3.8-27B</span> </a> <div></div> </nav> <section class="related-posts-section"><h2 class="related-posts-title">延伸阅读</h2><div class="related-posts-list"><a class="related-post-row" href="/posts/Pi_Agent_Core_%E6%9E%B6%E6%9E%84%E5%89%96%E6%9E%90/"><span class="related-post-title">Pi Agent Core 架构剖析</span><span class="related-post-meta"><time datetime="2026-08-19T00:00:00.000Z"> Aug 19 </time></span></a><a class="related-post-row" href="/posts/%E5%B0%9D%E8%AF%95%E5%9C%A8%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2%E5%A4%A7%E6%A8%A1%E5%9E%8B%EF%BC%9A4%C3%973090_%E8%B7%91_Qwen3.8-27B/"><span class="related-post-title">尝试在本地部署大模型：4×3090 跑 Qwen3.8-27B</span><span class="related-post-meta"><time datetime="2026-09-05T00:00:00.000Z"> Sep 5 </time></span></a><a class="related-post-row" href="/posts/%E9%A9%AF%E6%9C%8D_Claude_Code%EF%BC%9A%E4%B8%83%E7%A7%8D%E5%BC%95%E5%AF%BC%E5%AE%83%E8%A1%8C%E4%B8%BA%E7%9A%84%E6%96%B9%E5%BC%8F/"><span class="related-post-title">驯服 Claude Code：七种引导它行为的方式</span><span class="related-post-meta"><time datetime="2026-07-02T00:00:00.000Z"> Jul 2 </time></span></a><a class="related-post-row" href="/posts/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%BE%AE%E8%B0%83%E6%8A%80%E6%9C%AF%E8%AF%A6%E8%A7%A3%EF%BC%9AFull_Fine-tuning_%C2%B7_LoRA_%C2%B7_QLoRA/"><span class="related-post-title">大模型微调技术详解：Full Fine-tuning · LoRA · QLoRA</span><span class="related-post-meta"><time datetime="2026-05-26T00:00:00.000Z"> May 26 </time></span></a><a class="related-post-row" href="/posts/%E5%B7%A5%E6%97%B6%E8%AE%A1%E7%AE%97%E5%99%A8%EF%BC%9A%E5%9F%BA%E4%BA%8EFunction_Calling/"><span class="related-post-title">工时计算器：基于Function Calling</span><span class="related-post-meta"><time datetime="2026-05-13T00:00:00.000Z"> May 13 </time></span></a><a class="related-post-row" href="/posts/%E4%BB%8E_Prompt_Context_Harness_Engineering_%E7%9C%8B_Agent_%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/"><span class="related-post-title">从 Prompt/Context/Harness Engineering 看 Agent 系统设计</span><span class="related-post-meta"><time datetime="2026-05-05T00:00:00.000Z"> May 5 </time></span></a></div></section> <div id="comments-section" class="article-comments-section is-comments-loading"><div id="waline" data-comment-system="waline" data-waline-path="36575ab8dc2f2168"></div> <div class="waline-loading" aria-hidden="true"> <span class="waline-loading-spinner"></span> <span class="waline-loading-text">评论加载中…</span> </div> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@waline/client@v3/dist/waline.css"> <script>(function(){const walineOptions = {"el":"#waline","path":"36575ab8dc2f2168","serverURL":"https://api.wqlblog.cn","dark":"html.dark","requiredMeta":["nick","mail"],"emoji":["https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/bilibili/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/qq/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/tieba/","https://cdn.jsdelivr.net/npm/@waline/emojis@1.2.0/weibo/"],"search":false,"lang":"zh","pageview":true};
+const allowedCommentDomains = [];
+const allowLocalInDev = false;
+const walineClientCDNBase = "https://cdn.jsdelivr.net/npm/@waline/client@v3/dist";
+
+    window.__walineConfig = { walineOptions, allowedCommentDomains, allowLocalInDev, walineClientCDNBase };
+})();</script> <script type="module" src="/_astro/Waline.astro_astro_type_script_index_0_lang.BDyriLpI.js"></script></div> </article> </main> </div> <script>
+		(function(){
+			try {
+				var s = JSON.parse(localStorage.getItem('article-sidebar-state') || '{}');
+				document.querySelectorAll('[data-edge-toggle]').forEach(function(btn) {
+					var side = btn.dataset.edgeToggle;
+					var c = !!s[side];
+					if (c) btn.classList.add('is-collapsed');
+				});
+			} catch(e) {}
+		})();
+		</script> <aside class="article-fab" aria-label="Article actions"> <button class="fab-btn" data-fab="top" aria-label="Back to top" title="Back to top"> <span class="fab-ring"></span> <svg class="fab-progress-ring" viewBox="0 0 38 38" aria-hidden="true"> <circle cx="19" cy="19" r="17"></circle> <circle class="fab-progress-fill" cx="19" cy="19" r="17"></circle> </svg> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M12 19V5M5 12l7-7 7 7"></path> </svg> </span> </button> <button class="fab-btn sidebar-dependent-hide" data-fab="drawer" aria-label="Table of contents" title="Table of contents" data-mobile-drawer-toggle aria-expanded="false" aria-controls="mobileDrawer"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 12h18M3 6h18M3 18h18"></path> </svg> </span> </button> <button class="fab-btn" data-comments-jump data-article-id="36575ab8dc2f2168" data-server-url="https://api.wqlblog.cn" aria-label="Comments" title="Comments"> <span class="fab-ring"></span> <span class="fab-inner"> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"> <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path> </svg> <span class="fab-badge waline-comment-count" data-comments-count data-path="36575ab8dc2f2168">—</span> </span> </button> </aside> </div> <script type="module" src="/_astro/_...slug_.astro_astro_type_script_index_0_lang.D1pIFJ8_.js"></script>  </div> <footer class="container mt-8"> <div class="py-4 border-t theme-divider text-sm theme-muted"> <div class="text-center space-y-1 md:space-y-0 md:grid md:grid-cols-3 md:items-center"> <div class="md:text-left">Copyright © 2026</div> <div class="md:text-center"> <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="hover:text-[var(--theme-fg)] transition-colors"> 黔ICP备2022002432号 </a> </div> <div class="md:text-right">Built with Astro.</div> </div> </div> </footer> <div id="waline-config" data-server-url="https://api.wqlblog.cn" hidden></div> <script type="module">function m(e){if(!e)return"";try{return new URL(e,window.location.href).href}catch{return e}}function y(e){return e.currentSrc||e.getAttribute("data-src")||e.getAttribute("src")||""}function g(e,t){const r=y(e);if(!r)return;const n=e.closest("picture")||e,o=n.parentElement;if(!o)return;if(o.tagName==="A"){const s=o,i=m(s.getAttribute("href")),l=m(r);!s.dataset.fancybox&&(!i||i===l)&&(s.setAttribute("href",r),s.dataset.fancybox=t),e.alt&&!s.dataset.caption&&(s.dataset.caption=e.alt),s.classList.add("previewable-link");return}const c=document.createElement("a");c.href=r,c.dataset.fancybox=t,c.dataset.caption=e.alt||"",c.className="previewable-link",o.insertBefore(c,n),c.appendChild(n)}function b(e,t,r){let a=r;e?.getCarousel?.()?.on("change",(n,o)=>{a=o}),e?.on?.("destroy",()=>{const n=t[a]??t[r];n instanceof HTMLElement&&setTimeout(()=>{n.scrollIntoView({block:"nearest",behavior:"instant"})},0)})}function h(){return{Hash:!1,hideScrollbar:!1,Thumbs:{autoStart:!0,showOnStart:"yes"},Toolbar:{display:{left:["infobar"],middle:["zoomIn","zoomOut","toggle1to1"],right:["slideshow","thumbs","close"]}},animated:!0,dragToClose:!0,keyboard:{Escape:"close",Delete:"close",Backspace:"close",PageUp:"next",PageDown:"prev",ArrowUp:"next",ArrowDown:"prev",ArrowRight:"next",ArrowLeft:"prev"},fitToView:!0,preload:3,infinite:!0,Panzoom:{maxScale:3,minScale:1},Carousel:{transition:"slide",preload:2}}}function d(){const e=window.Fancybox||window?.["@fancyapps/ui"]?.Fancybox;!e||typeof e.fromNodes!="function"||(document.querySelectorAll(".prose").forEach((t,r)=>{if(!(t instanceof HTMLElement))return;const a=`post-gallery-${r}`;t.dataset.previewGallery=a,t.querySelectorAll("img").forEach(n=>{n instanceof HTMLImageElement&&(n.classList.add("previewable-image"),g(n,a))})}),!document.__fancyboxClickBound&&(document.__fancyboxClickBound=!0,document.addEventListener("click",t=>{const a=(t.target instanceof Element?t.target:null)?.closest("a[data-fancybox], a[data-mermaid-gallery]");if(!(a instanceof HTMLAnchorElement))return;const n=a.closest(".prose");if(!(n instanceof HTMLElement))return;t.preventDefault(),t.stopPropagation();const o="mermaidGallery"in a.dataset,c=o?a.dataset.mermaidGallery:a.dataset.fancybox,s=o?`a[data-mermaid-gallery="${c}"]`:c?`a[data-fancybox="${c}"]`:"a[data-fancybox]",i=Array.from(n.querySelectorAll(s)).filter(p=>p instanceof HTMLAnchorElement),l=i.indexOf(a);if(i.length===0)return;const u=l>=0?l:0,f=e.fromNodes(i,{...h(),startIndex:u,triggerEl:a,placeFocusBack:!1});o&&setTimeout(()=>{(f??e.getInstance())?.getContainer?.()?.classList.add("is-mermaid-gallery")},0),b(f??e.getInstance(),i,u)},!0)))}d();window.addEventListener("load",d);document.addEventListener("astro:page-load",d);document.addEventListener("astro:after-swap",d);</script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_1_lang.DRxIS7cC.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_2_lang.CHCRmhs5.js"></script> <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1.13/dist/fancybox/fancybox.umd.js"></script> <script type="module" src="/_astro/BaseLayout.astro_astro_type_script_index_3_lang.mMDGy5WK.js"></script> </body> </html>
